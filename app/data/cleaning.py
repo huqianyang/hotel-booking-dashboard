@@ -17,16 +17,29 @@ CLEANED_BOOKING_COLUMNS = [
     "children",
     "babies",
     "total_guests",
+    "meal",
+    "meal_name",
     "country_code",
     "country_name",
     "market_segment",
     "market_segment_name",
     "distribution_channel",
+    "is_repeated_guest",
+    "is_repeated_guest_label",
+    "previous_cancellations",
+    "previous_bookings_not_canceled",
+    "reserved_room_type",
+    "assigned_room_type",
+    "room_type_changed",
+    "booking_changes",
     "deposit_type",
     "deposit_type_name",
+    "days_in_waiting_list",
     "customer_type",
     "customer_type_name",
     "adr",
+    "required_car_parking_spaces",
+    "total_of_special_requests",
     "reservation_status",
     "reservation_status_date",
     "is_deleted",
@@ -90,6 +103,14 @@ _CUSTOMER_TYPE_NAMES = {
     "Group": "团队客户",
 }
 
+_MEAL_NAMES = {
+    "BB": "含早餐",
+    "HB": "半餐",
+    "FB": "全餐",
+    "SC": "不含餐",
+    "Undefined": "未知",
+}
+
 
 def _arrival_date(frame):
     month = frame["arrival_date_month"].map(_MONTH_NAMES)
@@ -120,16 +141,29 @@ def clean_hotel_bookings(raw_bookings):
     cleaned["children"] = pd.to_numeric(raw_bookings["children"], errors="coerce").fillna(0).astype(int)
     cleaned["babies"] = pd.to_numeric(raw_bookings["babies"], errors="coerce").fillna(0).astype(int)
     cleaned["total_guests"] = cleaned["adults"] + cleaned["children"] + cleaned["babies"]
+    cleaned["meal"] = raw_bookings["meal"].fillna("Undefined")
+    cleaned["meal_name"] = cleaned["meal"].map(_MEAL_NAMES).fillna(cleaned["meal"])
     cleaned["country_code"] = raw_bookings["country"].fillna("未知")
     cleaned["country_name"] = cleaned["country_code"].map(_COUNTRY_NAMES).fillna(cleaned["country_code"])
     cleaned["market_segment"] = raw_bookings["market_segment"].fillna("Undefined")
     cleaned["market_segment_name"] = cleaned["market_segment"].map(_MARKET_SEGMENT_NAMES).fillna(cleaned["market_segment"])
     cleaned["distribution_channel"] = raw_bookings["distribution_channel"].fillna("Undefined")
+    cleaned["is_repeated_guest"] = pd.to_numeric(raw_bookings["is_repeated_guest"], errors="coerce").fillna(0).astype(int)
+    cleaned["is_repeated_guest_label"] = cleaned["is_repeated_guest"].map({0: "新客户", 1: "回头客"})
+    cleaned["previous_cancellations"] = pd.to_numeric(raw_bookings["previous_cancellations"], errors="coerce").fillna(0).astype(int)
+    cleaned["previous_bookings_not_canceled"] = pd.to_numeric(raw_bookings["previous_bookings_not_canceled"], errors="coerce").fillna(0).astype(int)
+    cleaned["reserved_room_type"] = raw_bookings["reserved_room_type"].fillna("未知")
+    cleaned["assigned_room_type"] = raw_bookings["assigned_room_type"].fillna("未知")
+    cleaned["room_type_changed"] = (cleaned["reserved_room_type"] != cleaned["assigned_room_type"]).astype(int)
+    cleaned["booking_changes"] = pd.to_numeric(raw_bookings["booking_changes"], errors="coerce").fillna(0).astype(int)
     cleaned["deposit_type"] = raw_bookings["deposit_type"].fillna("No Deposit")
     cleaned["deposit_type_name"] = cleaned["deposit_type"].map(_DEPOSIT_TYPE_NAMES).fillna(cleaned["deposit_type"])
+    cleaned["days_in_waiting_list"] = pd.to_numeric(raw_bookings["days_in_waiting_list"], errors="coerce").fillna(0).astype(int)
     cleaned["customer_type"] = raw_bookings["customer_type"].fillna("Transient")
     cleaned["customer_type_name"] = cleaned["customer_type"].map(_CUSTOMER_TYPE_NAMES).fillna(cleaned["customer_type"])
     cleaned["adr"] = pd.to_numeric(raw_bookings["adr"], errors="coerce").fillna(0.0).astype(float)
+    cleaned["required_car_parking_spaces"] = pd.to_numeric(raw_bookings["required_car_parking_spaces"], errors="coerce").fillna(0).astype(int)
+    cleaned["total_of_special_requests"] = pd.to_numeric(raw_bookings["total_of_special_requests"], errors="coerce").fillna(0).astype(int)
     cleaned["reservation_status"] = raw_bookings["reservation_status"]
     cleaned["reservation_status_date"] = pd.to_datetime(raw_bookings["reservation_status_date"])
     cleaned["is_deleted"] = 0
