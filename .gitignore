@@ -13,3 +13,6 @@ instance/
 .vscode/
 老师给的期末要求/
 .claude/*.bak
+task_plan.md
+findings.md
+progress.md
