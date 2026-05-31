@@ -1,5 +1,14 @@
 ## 2026-05-31
 
+### [MINOR] 更新 GitHub 仓库创建任务计划
+- 说明：已用明确上下文替换方式在 `task_plan.md` 追加“GitHub 仓库创建任务”，标记公开仓库配置确认和本地初始提交完成，剩余远端创建推送与验证。
+
+### [MINOR] 记录 task_plan 追加方式错误
+- 说明：尝试用空 `old_string` 向已有 `task_plan.md` 追加 GitHub 仓库创建任务时失败，错误为 `Cannot create new file - file already exists`；下一步改用明确上下文替换方式更新计划文件。
+
+### [MINOR] 创建初始提交
+- 说明：已先运行 `python -m pytest -v`，4 个测试全部通过；随后创建初始提交 `f98f6b8`，提交信息为 `Initialize Flask project collaboration baseline`，包含 Flask 骨架、协作配置、数据集、文档和过程文件。
+
 ### [MINOR] 暂存公开仓库提交文件
 - 说明：已执行 `git add . && git status --short`，暂存内容包含 Flask 骨架、测试、数据集、任务文档、过程文件、`.claude` 项目配置和 `.github` 协作文件；未包含 `老师给的期末要求/`。Git 的 LF/CRLF 警告属于 Windows 换行提示，不影响本次提交。
 
