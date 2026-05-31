@@ -1,5 +1,14 @@
 ## 2026-05-31
 
+### [MINOR] 完成 GitHub 仓库创建计划收尾
+- 说明：已将 `task_plan.md` 中 GitHub 仓库创建任务全部标记为完成，包括公开仓库配置、本地初始化与提交、远端创建推送、远端状态和测试验证。
+
+### [MINOR] 验证公开 GitHub 仓库状态
+- 说明：`git remote -v` 显示 origin 指向 `https://github.com/huqianyang/hotel-booking-dashboard.git`；`gh repo view` 确认仓库名为 `hotel-booking-dashboard`、可见性 `PUBLIC`、默认分支 `main`；`python -m pytest -v` 再次通过 4 个测试。当前仅有本条进度记录待最终提交推送。
+
+### [MINOR] 创建并推送公开 GitHub 仓库
+- 说明：已执行 `gh repo create hotel-booking-dashboard --public --source . --remote origin --push`，公开仓库创建成功并推送 main 分支，远端地址为 `https://github.com/huqianyang/hotel-booking-dashboard`。
+
 ### [MINOR] 更新 GitHub 仓库创建任务计划
 - 说明：已用明确上下文替换方式在 `task_plan.md` 追加“GitHub 仓库创建任务”，标记公开仓库配置确认和本地初始提交完成，剩余远端创建推送与验证。
 
