@@ -12,7 +12,8 @@ instance/
 .idea/
 .vscode/
 老师给的期末要求/
-.claude/*.bak
+.claude/
+hotel_bookings.csv
 task_plan.md
 findings.md
 progress.md
