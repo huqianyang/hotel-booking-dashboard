@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>评估与预测页 UI 示例 - 指标提示版</title>
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; background:#f3ead6; color:#2f2619; }
+    .page { min-height:100vh; padding:30px; background:linear-gradient(135deg,#fff8e9,#efe0bd 58%,#f8f0df); }
+    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:22px; }
+    small { color:#8a661f; letter-spacing:.26em; font-weight:700; }
+    h1 { margin:8px 0; font-size:34px; }
+    p { margin:0; color:#725f43; line-height:1.65; }
+    .shell { border:1px solid #dec995; border-radius:28px; overflow:hidden; background:#fffdf7; box-shadow:0 28px 68px rgba(94,72,36,.18); }
+    .top { height:46px; background:#fff1d2; border-bottom:1px solid #dec995; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+    .dots { display:flex; gap:8px; }
+    .dot { width:10px; height:10px; border-radius:50%; background:#c4902f; opacity:.75; }
+    .url { color:#8a6d3f; font-size:12px; }
+    .layout { display:grid; grid-template-columns:190px 1fr; min-height:980px; }
+    .side { background:#efe2c3; border-right:1px solid #dec995; padding:18px 14px; display:flex; flex-direction:column; }
+    .brand { height:64px; border-radius:18px; background:linear-gradient(135deg,#1f4d3a,#bd8a2b); color:white; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; margin-bottom:18px; text-align:center; line-height:1.2; }
+    .nav { min-height:40px; border-radius:13px; background:#fff8e9; border:1px solid #e1cc98; margin-bottom:10px; display:flex; align-items:center; padding:0 14px; font-size:15px; color:#614d2f; }
+    .nav.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .side-bottom { margin-top:auto; padding-top:16px; border-top:1px solid #d8c08a; }
+    .side-bottom h4 { margin:0 0 10px; font-size:15px; color:#5b4630; }
+    .side-row { display:flex; justify-content:space-between; align-items:center; min-height:27px; font-size:13px; color:#604f37; gap:8px; }
+    .side-row i { width:8px; height:8px; border-radius:50%; background:#1f8a5b; display:inline-block; margin-right:5px; }
+    .side-row em { font-style:normal; color:#1f4d3a; font-weight:800; }
+    .main { padding:22px; display:flex; flex-direction:column; gap:16px; }
+    .title { min-height:74px; border-radius:20px; background:#fff6e4; border:1px solid #ead7aa; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 20px; }
+    .title h2 { margin:0; font-size:26px; }
+    .title span { color:#80643b; font-size:14px; }
+    .btns { display:flex; gap:9px; flex-wrap:wrap; justify-content:flex-end; }
+    .btn { border:1px solid #d8c08a; background:#fff8e9; color:#6b4f25; border-radius:999px; padding:9px 13px; font-size:14px; }
+    .btn.primary { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .grid-3 { display:grid; grid-template-columns:1.05fr 1fr 1fr; gap:16px; }
+    .grid-2 { display:grid; grid-template-columns:1.05fr .95fr; gap:16px; }
+    .panel { background:#fff; border:1px solid #ead7aa; border-radius:22px; padding:18px; min-height:220px; position:relative; }
+    .panel h3 { margin:0 0 14px; font-size:20px; color:#3d2f1f; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .panel h3 span { font-size:13px; color:#8a6d3f; font-weight:400; }
+    .metric { min-height:132px; background:#fff; border:1px solid #ead7aa; border-radius:20px; padding:16px; position:relative; box-shadow:0 10px 26px rgba(94,72,36,.08); }
+    .metric .name { font-size:15px; color:#604f37; margin-bottom:9px; display:flex; align-items:center; gap:6px; }
+    .metric .value { font-size:34px; font-weight:900; color:#1f4d3a; line-height:1; }
+    .metric .sub { margin-top:10px; color:#8a6d3f; font-size:13px; line-height:1.5; }
+    .info { position:absolute; right:12px; top:12px; width:22px; height:22px; border-radius:50%; border:1px solid #d8c08a; background:#fff8e9; color:#8a661f; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; cursor:help; }
+    .tip { display:none; position:absolute; right:8px; top:40px; z-index:10; width:245px; padding:12px 13px; border-radius:14px; background:#2f2619; color:#fff8e9; box-shadow:0 18px 38px rgba(47,38,25,.28); line-height:1.55; font-size:13px; font-weight:400; }
+    .tip:before { content:""; position:absolute; right:16px; top:-7px; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid #2f2619; }
+    .info:hover + .tip { display:block; }
+    .badge { border-radius:999px; padding:5px 9px; background:#fff3d8; color:#92400e; border:1px solid #e0c58c; font-size:12px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th { background:#fff3d8; color:#6b4f25; text-align:left; padding:10px; border-bottom:1px solid #ead7aa; }
+    td { padding:10px; border-bottom:1px solid #f1dfb6; color:#604f37; }
+    .tag { border-radius:999px; padding:4px 9px; background:#e7f5ee; color:#1f6b4d; font-size:12px; font-weight:700; }
+    .tag.warn { background:#fff3d8; color:#92400e; }
+    .tag.danger { background:#fee2e2; color:#b91c1c; }
+    .chart { height:240px; border:1px solid #ead7aa; border-radius:18px; background:linear-gradient(180deg,#fffaf0,#fff); position:relative; overflow:hidden; }
+    .roc { position:absolute; left:34px; right:28px; bottom:34px; top:24px; border-left:2px solid #d8c08a; border-bottom:2px solid #d8c08a; }
+    .roc:before { content:""; position:absolute; left:0; bottom:0; width:95%; height:85%; background:linear-gradient(135deg,transparent 49%,rgba(216,192,138,.7) 50%,transparent 51%); }
+    .curve { position:absolute; left:0; bottom:0; width:95%; height:86%; border-left:0; }
+    .curve svg { width:100%; height:100%; overflow:visible; }
+    .axis { position:absolute; font-size:12px; color:#8a6d3f; }
+    .matrix { display:grid; grid-template-columns:110px 1fr 1fr; border:1px solid #ead7aa; border-radius:16px; overflow:hidden; }
+    .cell { min-height:62px; padding:11px; border-right:1px solid #ead7aa; border-bottom:1px solid #ead7aa; background:#fffaf0; font-size:13px; color:#604f37; display:flex; flex-direction:column; justify-content:center; gap:5px; }
+    .cell.head { background:#fff3d8; font-weight:800; color:#6b4f25; }
+    .cell.good { background:#e7f5ee; color:#1f6b4d; font-weight:800; }
+    .cell.bad { background:#fff7ed; color:#b45309; font-weight:800; }
+    .form { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .field { border:1px solid #ead7aa; border-radius:14px; background:#fffaf0; padding:10px 12px; }
+    .field label { display:block; font-size:12px; color:#8a6d3f; margin-bottom:6px; }
+    .field div { font-size:15px; color:#3d2f1f; font-weight:700; }
+    .result { border-radius:20px; background:linear-gradient(135deg,#fff3d8,#fee2e2); border:1px solid #efc68c; padding:18px; min-height:150px; display:flex; flex-direction:column; justify-content:center; }
+    .result strong { color:#b91c1c; font-size:34px; }
+    .result span { color:#604f37; line-height:1.7; }
+    .explain { background:#fff8e9; border:1px solid #d8c08a; border-radius:18px; padding:14px 16px; line-height:1.75; color:#604f37; }
+    .callout { border-left:5px solid #1f4d3a; background:#f4fbf6; padding:12px 14px; border-radius:14px; color:#355744; line-height:1.7; }
+    @media (max-width:1300px) { .layout,.grid-4,.grid-3,.grid-2,.form { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <small>MODEL EVALUATION & PREDICTION MOCKUP</small>
+        <h1>评估与预测页：指标悬浮说明版</h1>
+        <p>指标名称全部中文化，右上角圆圈感叹号用于鼠标悬浮解释，页面保持干净，同时方便答辩时讲清楚。</p>
+      </div>
+      <p>示例交互：把鼠标移到每个指标卡右上角 “!” 查看含义。</p>
+    </header>
+
+    <div class="shell">
+      <div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/model-evaluation?model=random_forest</div></div>
+      <div class="layout">
+        <aside class="side">
+          <div class="brand">酒店预订<br/>风险分析</div>
+          <div class="nav">首页总览</div>
+          <div class="nav">数据查询</div>
+          <div class="nav">数据可视化</div>
+          <div class="nav on">评估与预测</div>
+          <div class="side-bottom">
+            <h4>当前模型</h4>
+            <div class="side-row"><span><i></i><b>任务</b></span><em>二分类</em></div>
+            <div class="side-row"><span><i></i><b>标签</b></span><em>是否取消</em></div>
+            <div class="side-row"><span><i></i><b>推荐</b></span><em>随机森林</em></div>
+            <div class="side-row"><span><i></i><b>状态</b></span><em>已训练</em></div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="title">
+            <div>
+              <h2>模型评估与取消风险预测</h2>
+              <span>先说明任务类型，再展示模型对比、评估结果和单条订单预测。</span>
+            </div>
+            <div class="btns"><span class="btn primary">模型评估</span><span class="btn">预测演示</span><span class="btn">实时预测记录</span></div>
+          </div>
+
+          <section class="grid-3">
+            <div class="panel">
+              <h3>任务识别 <span class="badge">老师容易问</span></h3>
+              <table>
+                <tr><th>项目</th><th>内容</th></tr>
+                <tr><td>预测目标</td><td>判断酒店订单是否可能取消</td></tr>
+                <tr><td>标签字段</td><td>是否取消（is_canceled）</td></tr>
+                <tr><td>任务类型</td><td>监督学习 / 二分类</td></tr>
+                <tr><td>数据划分</td><td>训练集 80%，测试集 20%</td></tr>
+              </table>
+            </div>
+            <div class="panel">
+              <h3>模型选择结论 <span class="badge">人话解释</span></h3>
+              <div class="callout">相比逻辑回归和决策树，随机森林在测试集上的综合表现更稳定，因此推荐作为最终取消风险预测模型。</div>
+              <p style="margin-top:12px">页面只展示 2-3 个基础模型对比，不做复杂 AutoML，重点是让训练过程和选择理由说得清楚。</p>
+            </div>
+            <div class="panel">
+              <h3>答辩一句话 <span class="badge">可直接讲</span></h3>
+              <div class="explain">本页证明我们不是直接拿 AI 生成模型文件，而是先确定标签和任务类型，再划分训练集与测试集，对比多个分类模型，最后根据测试集指标选择随机森林模型进行订单取消风险预测。</div>
+            </div>
+          </section>
+
+          <section class="grid-4">
+            <div class="metric">
+              <div class="info">!</div><div class="tip">准确率看模型整体预测对了多少。比如 100 条订单中预测对 86 条，准确率就是 86%。</div>
+              <div class="name">准确率</div><div class="value">86.1%</div><div class="sub">整体预测正确比例较高</div>
+            </div>
+            <div class="metric">
+              <div class="info">!</div><div class="tip">精确率看“模型判断为高风险的订单”里面，有多少真的可能取消。它越高，说明误报越少。</div>
+              <div class="name">精确率</div><div class="value">84.0%</div><div class="sub">高风险判断可信度较好</div>
+            </div>
+            <div class="metric">
+              <div class="info">!</div><div class="tip">召回率看“实际会取消的订单”中，模型找出来了多少。它越高，说明漏掉的取消订单越少。</div>
+              <div class="name">召回率</div><div class="value">79.0%</div><div class="sub">多数取消订单能被识别</div>
+            </div>
+            <div class="metric">
+              <div class="info">!</div><div class="tip">F1 值综合考虑精确率和召回率，适合用来比较分类模型整体稳定性。</div>
+              <div class="name">F1 值</div><div class="value">81.0%</div><div class="sub">综合识别能力较稳定</div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <div class="panel">
+              <h3>候选模型对比 <span>中文指标 + 推荐结论</span></h3>
+              <table>
+                <tr><th>模型</th><th>准确率</th><th>精确率</th><th>召回率</th><th>F1 值</th><th>结论</th></tr>
+                <tr><td>逻辑回归</td><td>78.4%</td><td>74.2%</td><td>69.5%</td><td>71.8%</td><td><span class="tag">基础模型</span></td></tr>
+                <tr><td>决策树</td><td>80.2%</td><td>76.1%</td><td>73.0%</td><td>74.5%</td><td><span class="tag warn">易过拟合</span></td></tr>
+                <tr><td>随机森林</td><td>86.1%</td><td>84.0%</td><td>79.0%</td><td>81.0%</td><td><span class="tag danger">推荐使用</span></td></tr>
+              </table>
+            </div>
+
+            <div class="panel">
+              <h3>AUC 值与 ROC 曲线 <span class="badge">区分能力</span></h3>
+              <div class="metric" style="min-height:72px;margin-bottom:12px;box-shadow:none;">
+                <div class="info">!</div><div class="tip">AUC 可以理解为模型区分“会取消”和“不会取消”的能力，越接近 1 越好。</div>
+                <div class="name">AUC 值</div><div class="value" style="font-size:28px">0.89</div>
+              </div>
+              <div class="chart">
+                <div class="roc">
+                  <div class="curve"><svg viewBox="0 0 260 170" preserveAspectRatio="none"><path d="M0,170 C28,92 66,52 116,30 C164,10 210,5 260,0" fill="none" stroke="#1f4d3a" stroke-width="5" stroke-linecap="round"/><path d="M0,170 L260,0" fill="none" stroke="#d8c08a" stroke-width="2" stroke-dasharray="6 6"/></svg></div>
+                  <span class="axis" style="left:-20px;top:-14px">越靠左上越好</span>
+                  <span class="axis" style="right:0;bottom:-26px">误报率</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <div class="panel">
+              <h3>混淆矩阵 <span>不用显示英文 TP/FP</span></h3>
+              <div class="matrix">
+                <div class="cell head"></div><div class="cell head">预测未取消</div><div class="cell head">预测取消</div>
+                <div class="cell head">实际未取消</div><div class="cell good">预测正确<br/>12,860 条</div><div class="cell bad">误报<br/>1,140 条</div>
+                <div class="cell head">实际取消</div><div class="cell bad">漏报<br/>1,520 条</div><div class="cell good">预测正确<br/>5,690 条</div>
+              </div>
+              <p style="margin-top:12px">解释：混淆矩阵用来看模型具体错在哪里，是误报多，还是漏报多。</p>
+            </div>
+
+            <div class="panel">
+              <h3>单条订单取消风险预测 <span>演示模型怎么用</span></h3>
+              <div class="form">
+                <div class="field"><label>提前预订天数</label><div>132 天</div></div>
+                <div class="field"><label>市场渠道</label><div>在线旅行社</div></div>
+                <div class="field"><label>酒店类型</label><div>城市酒店</div></div>
+                <div class="field"><label>押金类型</label><div>不可退款</div></div>
+              </div>
+              <div class="result" style="margin-top:14px">
+                <span>预测取消概率</span>
+                <strong>78.6%</strong>
+                <span>风险等级：高风险。建议提前确认客户意向或采取担保策略。</span>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

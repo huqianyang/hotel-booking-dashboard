@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>酒店预订数据可视化分析与预测系统</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">酒店预订数据可视化分析与预测系统</div>
+    <nav class="nav">
+      <a href="/">首页</a>
+      <a href="#data-query">数据查询</a>
+      <a href="#visualization">数据可视化</a>
+      <a href="#prediction">评估与预测</a>
+    </nav>
+  </header>
+  <main class="page-shell">
+    <section class="hero">
+      <p class="eyebrow">Hotel Booking Dashboard</p>
+      <h1>酒店预订取消风险分析与实时可视化平台</h1>
+      <p>系统后续将整合 MySQL、Redis、Flume、Kafka、Storm、机器学习模型与 PyECharts 图表，支撑课程设计演示。</p>
+    </section>
+    <section class="cards" aria-label="核心模块">
+      <article id="data-query" class="card">
+        <h2>数据查询</h2>
+        <p>面向酒店预订历史数据的检索、筛选与业务操作展示。</p>
+      </article>
+      <article id="visualization" class="card">
+        <h2>数据可视化</h2>
+        <p>展示时间趋势、地区分布、渠道结构、客户画像和实时指标。</p>
+      </article>
+      <article id="prediction" class="card">
+        <h2>评估与预测</h2>
+        <p>提供单条订单取消风险预测、模型评估详情和批量预测记录。</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

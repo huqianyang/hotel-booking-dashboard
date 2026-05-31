@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据可视化页 UI 示例</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",sans-serif; background:#f3ead6; color:#2f2619; }
+    .page { min-height:100vh; padding:30px; background:linear-gradient(135deg,#fff8e9,#efe0bd 58%,#f8f0df); }
+    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:22px; }
+    small { color:#8a661f; letter-spacing:.28em; font-weight:700; }
+    h1 { margin:8px 0; font-size:34px; }
+    p { margin:0; color:#725f43; line-height:1.6; }
+    .shell { border:1px solid #dec995; border-radius:28px; overflow:hidden; background:#fffdf7; box-shadow:0 28px 68px rgba(94,72,36,.18); }
+    .top { height:46px; background:#fff1d2; border-bottom:1px solid #dec995; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+    .dots { display:flex; gap:8px; }
+    .dot { width:10px; height:10px; border-radius:50%; background:#c4902f; opacity:.75; }
+    .url { color:#8a6d3f; font-size:12px; }
+    .layout { display:grid; grid-template-columns:190px 1fr; min-height:880px; }
+    .side { background:#efe2c3; border-right:1px solid #dec995; padding:18px 14px; display:flex; flex-direction:column; }
+    .brand { height:64px; border-radius:18px; background:linear-gradient(135deg,#1f4d3a,#bd8a2b); color:white; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; margin-bottom:18px; text-align:center; line-height:1.2; }
+    .nav { min-height:40px; border-radius:13px; background:#fff8e9; border:1px solid #e1cc98; margin-bottom:10px; display:flex; align-items:center; padding:0 14px; font-size:15px; color:#614d2f; }
+    .nav.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .side-bottom { margin-top:auto; padding-top:16px; border-top:1px solid #d8c08a; }
+    .side-bottom h4 { margin:0 0 10px; font-size:15px; color:#5b4630; }
+    .side-row { display:flex; justify-content:space-between; align-items:center; min-height:26px; font-size:13px; color:#604f37; gap:8px; }
+    .side-row i { width:8px; height:8px; border-radius:50%; background:#1f8a5b; display:inline-block; margin-right:5px; }
+    .side-row em { font-style:normal; color:#1f4d3a; font-weight:800; }
+    .main { padding:22px; display:flex; flex-direction:column; gap:16px; }
+    .title { min-height:70px; border-radius:20px; background:#fff6e4; border:1px solid #ead7aa; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 20px; }
+    .title h2 { margin:0; font-size:26px; }
+    .title span { color:#80643b; font-size:14px; }
+    .tabs { display:flex; gap:9px; flex-wrap:wrap; }
+    .tab { border:1px solid #d8c08a; background:#fff8e9; color:#6b4f25; border-radius:999px; padding:9px 13px; font-size:14px; }
+    .tab.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .filter { border:1px solid #d8c08a; background:#fff8e9; border-radius:18px; padding:14px 16px; display:flex; justify-content:space-between; gap:16px; align-items:center; }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { background:#fff; border:1px solid #d8c08a; border-radius:999px; padding:7px 11px; font-size:13px; color:#6b4f25; }
+    .grid-main { display:grid; grid-template-columns:1.25fr .9fr; gap:16px; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .panel { background:#fff; border:1px solid #ead7aa; border-radius:22px; padding:18px; min-height:220px; }
+    .panel h3 { margin:0 0 14px; font-size:20px; color:#3d2f1f; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .panel h3 span { font-size:13px; color:#8a6d3f; font-weight:400; }
+    .badge { border-radius:999px; padding:5px 9px; background:#fff3d8; color:#92400e; border:1px solid #e0c58c; font-size:12px; }
+    .chart { height:240px; display:grid; grid-template-columns:repeat(7,1fr); gap:11px; align-items:end; border-bottom:1px solid #ead7aa; padding-top:16px; }
+    .slot { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:7px; height:100%; position:relative; }
+    .bar { width:100%; min-height:18px; border-radius:9px 9px 0 0; background:linear-gradient(to top,#c68a22,#f0c060); position:relative; }
+    .bar.green { background:linear-gradient(to top,#1f6b4d,#75ba8d); }
+    .dotline { position:absolute; width:12px; height:12px; border-radius:50%; background:#b91c1c; right:12px; top:-8px; box-shadow:0 0 0 4px rgba(185,28,28,.12); }
+    .label { font-size:12px; color:#7b6036; }
+    .scatter { height:250px; position:relative; border-left:1px solid #ead7aa; border-bottom:1px solid #ead7aa; background:linear-gradient(#fff,#fff8ee); border-radius:12px; }
+    .point { position:absolute; width:14px; height:14px; border-radius:50%; background:#1f6b4d; box-shadow:0 0 0 5px rgba(31,107,77,.1); }
+    .point.warn { background:#b45309; box-shadow:0 0 0 5px rgba(180,83,9,.12); }
+    .pie { width:190px; height:190px; border-radius:50%; margin:14px auto; background:conic-gradient(#1f4d3a 0 48%, #c68a22 48% 72%, #75ba8d 72% 88%, #ead7aa 88% 100%); position:relative; }
+    .pie:after { content:"取消率\A37.04%"; white-space:pre; position:absolute; inset:46px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; text-align:center; color:#1f4d3a; font-weight:800; line-height:1.5; }
+    .legend { display:grid; gap:8px; font-size:13px; color:#604f37; }
+    .legend i { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; background:#1f4d3a; }
+    .legend i.orange { background:#c68a22; } .legend i.green { background:#75ba8d; } .legend i.light { background:#ead7aa; }
+    .map { height:250px; border:1px solid #ead7aa; border-radius:18px; background:radial-gradient(circle at 30% 45%,#ead7aa 0 8%,transparent 9%),radial-gradient(circle at 50% 36%,#dfc88c 0 7%,transparent 8%),radial-gradient(circle at 72% 58%,#ead7aa 0 8%,transparent 9%),linear-gradient(135deg,#f7ecd3,#fffaf0); position:relative; overflow:hidden; }
+    .map b { position:absolute; width:18px; height:18px; border-radius:50%; background:#b45309; box-shadow:0 0 18px rgba(180,83,9,.45); }
+    .map label { position:absolute; font-size:12px; color:#604f37; background:rgba(255,255,255,.75); border:1px solid #ead7aa; border-radius:999px; padding:4px 7px; }
+    .cloud { display:flex; flex-wrap:wrap; gap:10px; align-content:center; justify-content:center; min-height:190px; padding:16px; }
+    .word { color:#1f4d3a; font-weight:800; }
+    .word.orange { color:#b45309; }
+    .word.small { font-size:16px; } .word.mid { font-size:23px; } .word.big { font-size:34px; }
+    .factor-bars { display:grid; gap:12px; margin-top:12px; }
+    .factor-row { display:grid; grid-template-columns:120px 1fr 72px; gap:10px; align-items:center; color:#604f37; font-size:14px; }
+    .factor-track { height:24px; border-radius:999px; border:1px solid #dfc88c; background:#fff8e9; overflow:hidden; }
+    .factor-track b { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#1f4d3a,#75ba8d); }
+    .factor-track b.warn { background:linear-gradient(90deg,#b45309,#f0c060); }
+    .heat { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; height:190px; }
+    .cell { border-radius:8px; background:#e8f5e9; display:flex; align-items:center; justify-content:center; color:#604f37; font-size:11px; }
+    .cell.m1 { background:#fef3c7; } .cell.m2 { background:#fed7aa; } .cell.m3 { background:#fca5a5; color:#7f1d1d; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th { background:#fff3d8; color:#6b4f25; text-align:left; padding:10px; border-bottom:1px solid #ead7aa; }
+    td { padding:10px; border-bottom:1px solid #f1dfb6; }
+    .insights { display:grid; gap:12px; }
+    .insight { border:1px solid #ead7aa; border-radius:16px; background:#fff8e9; padding:12px; }
+    .insight strong { display:block; color:#1f4d3a; margin-bottom:6px; }
+    .insight p { font-size:13px; line-height:1.6; color:#604f37; }
+    .insight .more { margin-top:8px; display:inline-block; color:#1f4d3a; font-weight:800; font-size:13px; }
+    .note { padding:14px 16px; border:1px solid #d8c08a; border-radius:18px; background:#fff8e9; color:#604f37; line-height:1.75; }
+    @media (max-width:1300px) { .layout,.grid-main,.grid-3 { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <small>VISUAL ANALYTICS PAGE MOCKUP</small>
+        <h1>数据可视化页：围绕取消率预测的五类图表</h1>
+        <p>不直接按课本目录生硬分区，而是按业务问题组织，同时标注对应可视化类型。</p>
+      </div>
+      <p>图表之间支持点击联动，并可跳转数据查询页查看明细。</p>
+    </header>
+
+    <div class="shell">
+      <div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/visualization</div></div>
+      <div class="layout">
+        <aside class="side">
+          <div class="brand">酒店预订<br/>风险分析</div>
+          <div class="nav">首页总览</div>
+          <div class="nav">数据查询</div>
+          <div class="nav on">数据可视化</div>
+          <div class="nav">评估与预测</div>
+          <div class="side-bottom">
+            <h4>全局筛选</h4>
+            <div class="side-row"><span><i></i><b>日期</b></span><em>全部</em></div>
+            <div class="side-row"><span><i></i><b>酒店</b></span><em>全部</em></div>
+            <div class="side-row"><span><i></i><b>国家</b></span><em>全部</em></div>
+            <div class="side-row"><span><i></i><b>风险</b></span><em>全部</em></div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="title">
+            <div>
+              <h2>取消率预测可视化分析</h2>
+              <span>从时间趋势、影响因素、客户渠道、地区分布和风险标签理解取消风险。</span>
+            </div>
+            <div class="tabs"><span class="tab on">取消趋势</span><span class="tab">影响因素</span><span class="tab">客户渠道</span><span class="tab">地区交互</span><span class="tab">风险标签</span></div>
+          </div>
+
+          <section class="filter">
+            <div><strong>当前联动条件：</strong>全部酒店，全部国家，历史基线 + 实时模拟数据</div>
+            <div class="chips"><span class="chip">时间</span><span class="chip">关系</span><span class="chip">比例</span><span class="chip">文本</span><span class="chip">复杂数据可视化</span></div>
+          </section>
+
+          <section class="grid-main">
+            <div class="panel">
+              <h3>月度预订量与取消率趋势 <span class="badge">时间数据可视化</span></h3>
+              <div class="chart">
+                <div class="slot"><div class="bar" style="height:36%"><i class="dotline"></i></div><div class="label">1月</div></div>
+                <div class="slot"><div class="bar green" style="height:48%"><i class="dotline"></i></div><div class="label">2月</div></div>
+                <div class="slot"><div class="bar" style="height:62%"><i class="dotline"></i></div><div class="label">3月</div></div>
+                <div class="slot"><div class="bar green" style="height:55%"><i class="dotline"></i></div><div class="label">4月</div></div>
+                <div class="slot"><div class="bar" style="height:78%"><i class="dotline"></i></div><div class="label">5月</div></div>
+                <div class="slot"><div class="bar green" style="height:69%"><i class="dotline"></i></div><div class="label">6月</div></div>
+                <div class="slot"><div class="bar" style="height:82%"><i class="dotline"></i></div><div class="label">7月</div></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>取消影响因素对比 <span class="badge">关系数据可视化</span></h3>
+              <div class="factor-bars">
+                <div class="factor-row"><span>提前预订 &gt;120天</span><div class="factor-track"><b class="warn" style="width:86%"></b></div><strong>52.4%</strong></div>
+                <div class="factor-row"><span>团体订单</span><div class="factor-track"><b class="warn" style="width:78%"></b></div><strong>61.1%</strong></div>
+                <div class="factor-row"><span>Online TA</span><div class="factor-track"><b style="width:64%"></b></div><strong>43.6%</strong></div>
+                <div class="factor-row"><span>无特殊需求</span><div class="factor-track"><b style="width:58%"></b></div><strong>39.8%</strong></div>
+                <div class="factor-row"><span>ADR 偏高</span><div class="factor-track"><b style="width:46%"></b></div><strong>34.2%</strong></div>
+              </div>
+              <div class="note" style="margin-top:14px">用业务因素对比解释取消风险，比纯矩阵相关性更容易向老师说明。</div>
+            </div>
+          </section>
+
+          <section class="grid-3">
+            <div class="panel">
+              <h3>取消 / 未取消占比 <span class="badge">比例</span></h3>
+              <div class="pie"></div>
+              <div class="legend"><span><i></i>未取消 62.96%</span><span><i class="orange"></i>已取消 37.04%</span><span><i class="green"></i>高风险未确认</span><span><i class="light"></i>其他</span></div>
+            </div>
+
+            <div class="panel">
+              <h3>高风险标签词云 <span class="badge">文本</span></h3>
+              <div class="cloud"><span class="word big orange">提前预订长</span><span class="word mid">Online TA</span><span class="word big">无押金</span><span class="word small">城市酒店</span><span class="word mid orange">团体订单</span><span class="word small">特殊需求少</span><span class="word mid">Portugal</span><span class="word small orange">ADR 偏高</span></div>
+            </div>
+
+            <div class="panel">
+              <h3>特征关系补充分析 <span class="badge">模型解释补充</span></h3>
+              <div class="heat">
+                <div class="cell">hotel</div><div class="cell m1">lead</div><div class="cell m2">adr</div><div class="cell m3">cancel</div><div class="cell">agent</div><div class="cell m1">market</div>
+                <div class="cell m1">lead</div><div class="cell">1.0</div><div class="cell m2">0.4</div><div class="cell m3">0.6</div><div class="cell m1">0.2</div><div class="cell m2">0.3</div>
+                <div class="cell m2">adr</div><div class="cell m2">0.4</div><div class="cell">1.0</div><div class="cell m1">0.2</div><div class="cell">0.1</div><div class="cell m1">0.2</div>
+                <div class="cell m3">cancel</div><div class="cell m3">0.6</div><div class="cell m1">0.2</div><div class="cell">1.0</div><div class="cell m2">0.4</div><div class="cell m3">0.5</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-main">
+            <div class="panel">
+              <h3>世界地图取消率分布 <span class="badge">复杂数据可视化</span></h3>
+              <div class="map"><b style="left:26%;top:45%"></b><label style="left:18%;top:60%">Portugal 56.6%</label><b style="left:45%;top:36%"></b><label style="left:42%;top:25%">France 18.5%</label><b style="left:62%;top:48%"></b><label style="left:59%;top:60%">Germany 16.7%</label><b style="left:74%;top:58%"></b><label style="left:70%;top:70%">Asia</label></div>
+            </div>
+
+            <div class="panel">
+              <h3>筛选结果解读 <span>随图表选择自动更新</span></h3>
+              <div class="insights">
+                <div class="insight"><strong>Portugal 来源订单取消风险最高</strong><p>当前地图选择后，Portugal 订单量 48,590，取消率 56.6%，明显高于整体取消率。</p><span class="more">查看相关订单</span></div>
+                <div class="insight"><strong>Online TA 与 Groups 渠道需要重点关注</strong><p>渠道分析显示 Groups 取消率达到 61.1%，Online TA 订单量最大，适合进一步筛选明细。</p><span class="more">查看渠道明细</span></div>
+                <div class="insight"><strong>提前预订天数较长时风险升高</strong><p>关系图中 lead_time &gt; 120 的订单取消率约 52.4%，可作为模型风险解释依据。</p><span class="more">跳转数据查询</span></div>
+              </div>
+            </div>
+          </section>
+
+          <div class="note">设计说明：页面按业务问题组织，但自然覆盖五类可视化。点击月份、国家、渠道、风险标签或因素对比项，会更新全局筛选条件；“筛选结果解读”负责用业务语言解释当前选择，并可跳转数据查询页查看订单明细。</div>
+        </main>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>首页模拟时间轴 UI 示例图</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",sans-serif; background:#f3ead6; color:#2f2619; }
+    .page { min-height:100vh; padding:32px; background:linear-gradient(135deg,#fff8e9,#efe0bd 58%,#f8f0df); }
+    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:24px; }
+    small { color:#8a661f; letter-spacing:.28em; font-weight:700; }
+    h1 { margin:8px 0; font-size:34px; }
+    p { margin:0; color:#725f43; line-height:1.6; }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px; align-items:start; }
+    .card { background:#fffaf0; border:1px solid #d8c08a; border-radius:28px; overflow:hidden; box-shadow:0 24px 58px rgba(94,72,36,.16); }
+    .card-head { padding:20px; background:linear-gradient(120deg,#fff7e5,#ead6a8); border-bottom:1px solid #d8c08a; }
+    .card-head h2 { margin:0; font-size:22px; display:flex; justify-content:space-between; gap:8px; align-items:center; }
+    .tag { border-radius:999px; padding:6px 10px; background:#1f4d3a; color:#fff; font-size:12px; white-space:nowrap; }
+    .tag.warn { background:#b45309; }
+    .tag.gray { background:#78664b; }
+    .mock { padding:16px; }
+    .screen { border:1px solid #dec995; background:#fffdf7; border-radius:20px; overflow:hidden; min-height:620px; }
+    .top { height:42px; background:#fff1d2; border-bottom:1px solid #dec995; display:flex; align-items:center; justify-content:space-between; padding:0 14px; }
+    .dots { display:flex; gap:8px; }
+    .dot { width:10px; height:10px; border-radius:50%; background:#c4902f; opacity:.75; }
+    .url { color:#8a6d3f; font-size:11px; }
+    .layout { display:grid; grid-template-columns:128px 1fr; min-height:578px; }
+    .side { background:#efe2c3; border-right:1px solid #dec995; padding:14px 10px; display:flex; flex-direction:column; }
+    .brand { height:52px; border-radius:14px; background:linear-gradient(135deg,#1f4d3a,#bd8a2b); color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; margin-bottom:14px; text-align:center; line-height:1.2; }
+    .nav { min-height:31px; border-radius:10px; background:#fff8e9; border:1px solid #e1cc98; margin-bottom:8px; display:flex; align-items:center; padding:0 10px; font-size:12px; color:#614d2f; }
+    .nav.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .side-box { margin-top:auto; padding-top:12px; border-top:1px solid #d8c08a; }
+    .side-box h4 { margin:0 0 8px; font-size:12px; color:#5b4630; }
+    .side-row { display:flex; justify-content:space-between; gap:6px; min-height:22px; font-size:10px; color:#604f37; }
+    .side-row em { font-style:normal; color:#1f4d3a; font-weight:700; }
+    .side-row.warn em { color:#b45309; }
+    .btn { margin-top:8px; min-height:30px; border-radius:10px; background:#1f4d3a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; text-align:center; }
+    .btn.secondary { background:#fff8e9; color:#5b4630; border:1px solid #d8c08a; }
+    .btn.warn { background:#b45309; }
+    .btn.disabled { background:#d8c08a; color:#80643b; }
+    .main { padding:14px; display:flex; flex-direction:column; gap:12px; }
+    .title { min-height:54px; border-radius:15px; background:#fff6e4; border:1px solid #ead7aa; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; }
+    .title h3 { margin:0; font-size:18px; }
+    .title span { color:#80643b; font-size:12px; }
+    .badge { background:#1f4d3a; color:white; border-radius:999px; padding:7px 11px; font-size:12px; }
+    .badge.warn { background:#b45309; }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .kpi { min-height:75px; background:#fff; border:1px solid #ead7aa; border-radius:16px; padding:10px; }
+    .kpi small { display:block; color:#8a6d3f; font-size:10px; margin-bottom:7px; }
+    .kpi strong { display:block; color:#1f4d3a; font-size:19px; }
+    .kpi em { display:block; color:#b45309; font-style:normal; font-size:10px; margin-top:4px; }
+    .panel { background:#fff; border:1px solid #ead7aa; border-radius:18px; padding:14px; min-height:160px; }
+    .panel h3 { margin:0 0 10px; font-size:14px; color:#5b4630; display:flex; justify-content:space-between; align-items:center; }
+    .panel h3 span { font-size:11px; color:#8a6d3f; font-weight:400; }
+    .tabs { display:flex; gap:6px; }
+    .tabs b { border:1px solid #d8c08a; border-radius:999px; padding:4px 8px; font-size:11px; color:#6b4f25; font-weight:400; }
+    .tabs b.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .chart { height:190px; display:grid; grid-template-columns:repeat(6,1fr); gap:10px; align-items:end; border-bottom:1px solid #ead7aa; padding:16px 0 0; }
+    .slot { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:6px; position:relative; }
+    .bar { width:100%; border-radius:8px 8px 0 0; background:linear-gradient(to top,#c68a22,#f0c060); min-height:14px; position:relative; }
+    .bar.green { background:linear-gradient(to top,#1f6b4d,#75ba8d); }
+    .bar.pending { background:#efe2c3; border:1px dashed #d8c08a; }
+    .bar.active { box-shadow:0 0 0 4px rgba(31,77,58,.12); }
+    .line-dot { position:absolute; width:11px; height:11px; border-radius:50%; background:#b91c1c; right:10px; top:-8px; box-shadow:0 0 0 4px rgba(185,28,28,.12); }
+    .label { font-size:10px; color:#7b6036; white-space:nowrap; }
+    .status-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+    .notice { border:1px solid #dfc88c; background:#fff8e9; border-radius:14px; padding:10px; font-size:12px; line-height:1.6; color:#6b4f25; }
+    .notice.warn { border-color:#d8a348; background:#fff3d8; color:#92400e; }
+    .table { width:100%; border-collapse:collapse; font-size:11px; border-radius:12px; overflow:hidden; }
+    .table th { background:#fff3d8; color:#6b4f25; text-align:left; padding:7px; border-bottom:1px solid #ead7aa; }
+    .table td { padding:7px; border-bottom:1px solid #f1dfb6; color:#4c3a24; }
+    .risk { border-radius:999px; padding:3px 7px; font-size:10px; background:#fee2e2; color:#b91c1c; }
+    .risk.mid { background:#fef3c7; color:#92400e; }
+    .explain { padding:0 18px 18px; color:#604f37; line-height:1.75; font-size:13px; }
+    @media (max-width:1300px) { .cards { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <small>SIMULATED TIME AXIS UI</small>
+        <h1>首页模拟时间轴图表 UI 示例</h1>
+        <p>展示订单模拟运行中、当日完成、自动进入下一日后三种首页图表状态。</p>
+      </div>
+      <p>横轴时间是系统生成的模拟时间段，不是 CSV 原始下单时间。</p>
+    </header>
+
+    <section class="cards">
+      <article class="card">
+        <div class="card-head"><h2>示例 1：模拟运行中 <span class="tag">实时更新</span></h2><p>当前日期正在处理，图表只点亮已完成时间段。</p></div>
+        <div class="mock"><div class="screen"><div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/dashboard/home?sim=running</div></div><div class="layout">
+          <aside class="side"><div class="brand">酒店预订<br/>风险分析</div><div class="nav on">首页总览</div><div class="nav">数据查询</div><div class="nav">数据可视化</div><div class="nav">评估与预测</div><div class="side-box"><h4>订单模拟</h4><div class="side-row"><span>状态</span><em>运行中</em></div><div class="side-row"><span>当前日期</span><em>2017-01-14</em></div><div class="side-row"><span>当前时段</span><em>12:00-14:00</em></div><div class="side-row"><span>进度</span><em>156 / 244</em></div><div class="btn warn">停止模拟</div><div class="btn secondary">刷新状态</div></div></aside>
+          <main class="main"><div class="title"><div><h3>当前日期预订流入与取消风险趋势</h3><span>2017-01-14 正在实时处理</span></div><div class="badge">运行中</div></div><div class="kpis"><div class="kpi"><small>当前总预订量</small><strong>80,256</strong><em>实时增长</em></div><div class="kpi"><small>当前日期订单</small><strong>244</strong><em>总量</em></div><div class="kpi"><small>已完成预测</small><strong>156</strong><em>进行中</em></div><div class="kpi"><small>高风险订单</small><strong>42</strong><em>暂定</em></div></div><div class="panel"><h3>模拟时间段趋势 <span class="tabs"><b class="on">日</b><b>周</b><b>月</b><b>季度</b><b>年</b></span></h3><div class="chart"><div class="slot"><div class="bar" style="height:38%"><i class="line-dot"></i></div><div class="label">08:00-10:00</div></div><div class="slot"><div class="bar green" style="height:52%"><i class="line-dot"></i></div><div class="label">10:00-12:00</div></div><div class="slot"><div class="bar active" style="height:66%"><i class="line-dot"></i></div><div class="label">12:00-14:00</div></div><div class="slot"><div class="bar pending" style="height:42%"></div><div class="label">14:00-16:00</div></div><div class="slot"><div class="bar pending" style="height:58%"></div><div class="label">16:00-18:00</div></div><div class="slot"><div class="bar pending" style="height:48%"></div><div class="label">18:00-20:00</div></div></div><div class="status-row"><div class="notice">已完成时间段显示真实订单量和取消概率；未完成时间段用虚线占位。</div><div class="notice">当前正在更新 12:00-14:00，完成后自动点亮下一时段。</div></div></div></main>
+        </div></div></div><div class="explain">运行中：图表随 Storm 处理结果逐段更新，老师能看到实时流处理正在推进。</div>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h2>示例 2：当前日期已完成 <span class="tag gray">完整汇总</span></h2><p>当天所有模拟时间段都完成，图表变成当日完整结果。</p></div>
+        <div class="mock"><div class="screen"><div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/dashboard/home?sim=day-complete</div></div><div class="layout">
+          <aside class="side"><div class="brand">酒店预订<br/>风险分析</div><div class="nav on">首页总览</div><div class="nav">数据查询</div><div class="nav">数据可视化</div><div class="nav">评估与预测</div><div class="side-box"><h4>订单模拟</h4><div class="side-row"><span>状态</span><em>连续运行</em></div><div class="side-row"><span>完成日期</span><em>2017-01-14</em></div><div class="side-row"><span>完成订单</span><em>244 / 244</em></div><div class="side-row"><span>下一日期</span><em>2017-01-15</em></div><div class="btn warn">停止模拟</div><div class="btn secondary">查看明细</div></div></aside>
+          <main class="main"><div class="title"><div><h3>2017-01-14 预订流入与取消风险汇总</h3><span>当前日期已完成，系统即将进入下一日期</span></div><div class="badge">当日完成</div></div><div class="kpis"><div class="kpi"><small>当前总预订量</small><strong>80,344</strong><em>80,008 + 336</em></div><div class="kpi"><small>当日完成预测</small><strong>244 / 244</strong><em>全部完成</em></div><div class="kpi"><small>当日高风险订单</small><strong>82</strong><em>最终结果</em></div><div class="kpi"><small>平均取消概率</small><strong>44.1%</strong><em>当日均值</em></div></div><div class="panel"><h3>当日完整时间段结果 <span class="tabs"><b class="on">日</b><b>周</b><b>月</b><b>季度</b><b>年</b></span></h3><div class="chart"><div class="slot"><div class="bar" style="height:38%"><i class="line-dot"></i></div><div class="label">08:00-10:00</div></div><div class="slot"><div class="bar green" style="height:52%"><i class="line-dot"></i></div><div class="label">10:00-12:00</div></div><div class="slot"><div class="bar" style="height:66%"><i class="line-dot"></i></div><div class="label">12:00-14:00</div></div><div class="slot"><div class="bar green" style="height:48%"><i class="line-dot"></i></div><div class="label">14:00-16:00</div></div><div class="slot"><div class="bar" style="height:82%"><i class="line-dot"></i></div><div class="label">16:00-18:00</div></div><div class="slot"><div class="bar green" style="height:71%"><i class="line-dot"></i></div><div class="label">18:00-20:00</div></div></div><div class="status-row"><div class="notice">所有时间段均已完成，可点击某个时段跳转数据查询页查看订单明细。</div><div class="notice">如果未点击停止，系统会自动进入 2017-01-15 继续模拟。</div></div></div></main>
+        </div></div></div><div class="explain">当日完成：图表不再是占位，而是完整的当日风险分布汇总。</div>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><h2>示例 3：自动进入下一日 <span class="tag">连续运行</span></h2><p>上一日结果可回看，主图切换到新的当前日期。</p></div>
+        <div class="mock"><div class="screen"><div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/dashboard/home?date=2017-01-15</div></div><div class="layout">
+          <aside class="side"><div class="brand">酒店预订<br/>风险分析</div><div class="nav on">首页总览</div><div class="nav">数据查询</div><div class="nav">数据可视化</div><div class="nav">评估与预测</div><div class="side-box"><h4>订单模拟</h4><div class="side-row"><span>状态</span><em>运行中</em></div><div class="side-row"><span>当前日期</span><em>2017-01-15</em></div><div class="side-row"><span>当前进度</span><em>23 / 67</em></div><div class="side-row"><span>上一日</span><em>已完成</em></div><div class="btn warn">停止模拟</div><div class="btn secondary">回看上一日</div></div></aside>
+          <main class="main"><div class="title"><div><h3>当前日期预订流入与取消风险趋势</h3><span>已自动进入 2017-01-15，可回看 2017-01-14 汇总</span></div><div class="badge">新日期运行中</div></div><div class="kpis"><div class="kpi"><small>当前总预订量</small><strong>80,367</strong><em>继续增长</em></div><div class="kpi"><small>当前日期订单</small><strong>67</strong><em>2017-01-15</em></div><div class="kpi"><small>已完成预测</small><strong>23 / 67</strong><em>新日期</em></div><div class="kpi"><small>当前高风险</small><strong>8</strong><em>暂定</em></div></div><div class="panel"><h3>新日期模拟时间段趋势 <span class="tabs"><b class="on">日</b><b>周</b><b>月</b><b>季度</b><b>年</b></span></h3><div class="chart"><div class="slot"><div class="bar green" style="height:42%"><i class="line-dot"></i></div><div class="label">08:00-10:00</div></div><div class="slot"><div class="bar active" style="height:36%"><i class="line-dot"></i></div><div class="label">10:00-12:00</div></div><div class="slot"><div class="bar pending" style="height:52%"></div><div class="label">12:00-14:00</div></div><div class="slot"><div class="bar pending" style="height:44%"></div><div class="label">14:00-16:00</div></div><div class="slot"><div class="bar pending" style="height:56%"></div><div class="label">16:00-18:00</div></div><div class="slot"><div class="bar pending" style="height:40%"></div><div class="label">18:00-20:00</div></div></div><div class="status-row"><div class="notice">主图始终显示当前正在处理的日期，自动跨天后图表日期同步切换。</div><div class="notice">上一日完整结果保留，可通过“回看上一日”或日期选择查看。</div></div></div></main>
+        </div></div></div><div class="explain">自动进入下一日：模拟持续运行时，首页主图跟随当前日期切换，不丢失前一天汇总。</div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

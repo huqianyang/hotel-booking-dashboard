@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>首页布局示意图选择</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Microsoft YaHei", "PingFang SC", sans-serif; background:#f3ead6; color:#2f2619; }
+    .page { padding:32px; min-height:100vh; background:linear-gradient(135deg,#fff8e9,#efe0bd 55%,#f8f0df); }
+    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:24px; }
+    small { color:#8a661f; letter-spacing:.28em; font-weight:700; }
+    h1 { margin:8px 0; font-size:34px; }
+    p { margin:0; color:#725f43; line-height:1.6; }
+    .options { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; align-items:start; }
+    .card { background:#fffaf0; border:1px solid #d8c08a; border-radius:28px; overflow:hidden; box-shadow:0 24px 58px rgba(94,72,36,.16); }
+    .card-head { padding:20px; background:linear-gradient(120deg,#fff7e5,#ead6a8); border-bottom:1px solid #d8c08a; }
+    .card-head h2 { margin:0; font-size:22px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .tag { font-size:12px; padding:6px 10px; border-radius:999px; background:#1f4d3a; color:#fff; white-space:nowrap; }
+    .card-head p { font-size:13px; margin-top:10px; }
+    .mock { padding:16px; }
+    .browser { border:1px solid #dec995; border-radius:20px; overflow:hidden; background:#fffdf7; min-height:640px; }
+    .top { height:44px; background:#fff1d2; border-bottom:1px solid #dec995; display:flex; align-items:center; justify-content:space-between; padding:0 14px; gap:8px; }
+    .dots { display:flex; gap:8px; }
+    .dot { width:10px; height:10px; border-radius:50%; background:#c4902f; opacity:.7; }
+    .url { color:#8a6d3f; font-size:11px; }
+    .layout { display:grid; grid-template-columns:118px 1fr; min-height:596px; }
+    .side { background:#efe2c3; border-right:1px solid #dec995; padding:14px 10px; display:flex; flex-direction:column; }
+    .brand { height:50px; border-radius:14px; background:linear-gradient(135deg,#1f4d3a,#bd8a2b); color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; margin-bottom:14px; text-align:center; line-height:1.2; }
+    .nav { min-height:32px; border-radius:10px; background:#fff8e9; border:1px solid #e1cc98; margin-bottom:8px; display:flex; align-items:center; padding:0 10px; font-size:12px; color:#614d2f; }
+    .nav.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .side-service { margin-top:auto; padding-top:12px; border-top:1px solid #d8c08a; }
+    .side-service h4 { margin:0 0 8px; font-size:12px; color:#5b4630; }
+    .side-service-row { display:flex; align-items:center; justify-content:space-between; gap:6px; min-height:24px; font-size:10px; color:#604f37; }
+    .side-service-row i { width:7px; height:7px; border-radius:50%; background:#1f8a5b; margin-right:4px; display:inline-block; }
+    .side-service-row.warn i { background:#b45309; }
+    .side-service-row b { font-weight:500; }
+    .side-service-row em { font-style:normal; color:#1f4d3a; font-weight:700; }
+    .side-service-row.warn em { color:#b45309; }
+    .side-demo { margin-top:10px; padding-top:10px; border-top:1px dashed #d8c08a; }
+    .side-demo h4 { margin:0 0 8px; font-size:12px; color:#5b4630; }
+    .side-demo-row { display:flex; justify-content:space-between; gap:6px; min-height:22px; font-size:10px; color:#604f37; }
+    .side-demo-row em { font-style:normal; color:#1f4d3a; font-weight:700; }
+    .side-btn { margin-top:8px; height:30px; border-radius:10px; background:#1f4d3a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+    .side-btn.secondary { background:#fff8e9; color:#5b4630; border:1px solid #d8c08a; margin-top:6px; }
+    .main { padding:14px; display:flex; flex-direction:column; gap:12px; }
+    .titlebar { min-height:54px; border-radius:15px; background:#fff6e4; border:1px solid #ead7aa; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; }
+    .titlebar h3 { margin:0; font-size:18px; }
+    .titlebar span { color:#80643b; font-size:12px; }
+    .date { background:#1f4d3a; color:white; border-radius:999px; padding:8px 12px; font-size:12px; }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; }
+    .kpis.today { grid-template-columns: repeat(4, 1fr); }
+    .section-label { display:flex; justify-content:space-between; align-items:center; color:#6b4f25; font-size:13px; font-weight:700; margin:2px 2px -4px; }
+    .section-label span { font-size:11px; color:#8a6d3f; font-weight:400; }
+    .range-tabs { display:flex; gap:6px; }
+    .range-tabs button { border:1px solid #d8c08a; background:#fff8e9; color:#6b4f25; border-radius:999px; padding:5px 9px; font-size:11px; font-family:inherit; }
+    .range-tabs button.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .kpi { min-height:82px; border-radius:17px; background:#fff; border:1px solid #ead7aa; padding:12px; }
+    .kpi small { display:block; color:#8a6d3f; font-size:11px; margin-bottom:8px; }
+    .kpi strong { display:block; color:#1f4d3a; font-size:21px; }
+    .kpi em { display:block; color:#b45309; font-style:normal; font-size:11px; margin-top:5px; }
+    .panel { border-radius:18px; background:#fff; border:1px solid #ead7aa; padding:14px; min-height:132px; }
+    .panel h3 { margin:0 0 10px; font-size:14px; color:#5b4630; display:flex; justify-content:space-between; align-items:center; }
+    .panel h3 span { font-size:11px; color:#8a6d3f; font-weight:400; }
+    .bars { display:flex; align-items:flex-end; gap:7px; height:120px; padding-top:8px; border-bottom:1px solid #ead7aa; }
+    .bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; height:100%; }
+    .bar { width:100%; border-radius:7px 7px 0 0; background:linear-gradient(to top,#b98224,#f0c060); min-height:18px; }
+    .bar.green { background:linear-gradient(to top,#1f6b4d,#75ba8d); }
+    .bar-label { font-size:10px; color:#7b6036; }
+    .grid2 { display:grid; grid-template-columns:1.35fr .85fr; gap:12px; }
+    .service { display:grid; gap:8px; }
+    .service-row { min-height:34px; border-radius:999px; background:#f8ecd2; border:1px solid #e2c98e; display:grid; grid-template-columns:12px 1fr auto; align-items:center; gap:8px; padding:0 10px; font-size:12px; }
+    .service-row i { width:9px; height:9px; border-radius:50%; background:#1f8a5b; }
+    .service-row.warn i { background:#b45309; }
+    .service-row b { font-weight:600; color:#5b4630; }
+    .service-row em { font-style:normal; color:#1f4d3a; font-weight:700; }
+    .service-row.warn em { color:#b45309; }
+    .btns { display:grid; grid-template-columns:1fr .7fr; gap:8px; margin-top:10px; }
+    .btn { height:38px; border-radius:12px; background:#1f4d3a; color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+    .btn.secondary { background:#fff8e9; color:#5b4630; border:1px solid #d8c08a; }
+    .hint { margin-top:8px; font-size:11px; color:#8a6d3f; line-height:1.5; }
+    .table { width:100%; border-collapse:collapse; font-size:12px; overflow:hidden; border-radius:12px; }
+    .table th { background:#fff3d8; color:#6b4f25; text-align:left; padding:8px; border-bottom:1px solid #ead7aa; }
+    .table td { padding:8px; border-bottom:1px solid #f1dfb6; color:#4c3a24; }
+    .risk { border-radius:999px; padding:3px 8px; font-size:11px; background:#fee2e2; color:#b91c1c; }
+    .risk.mid { background:#fef3c7; color:#92400e; }
+    .map { min-height:160px; border-radius:18px; background:linear-gradient(135deg,#f7ecd3,#fffaf0); border:1px solid #ead7aa; position:relative; overflow:hidden; }
+    .map:before { content:"国家取消风险分布"; position:absolute; left:14px; top:12px; font-size:13px; font-weight:700; color:#5b4630; }
+    .map b { position:absolute; width:16px; height:16px; border-radius:50%; background:#b45309; box-shadow:0 0 15px rgba(180,83,9,.45); }
+    .map label { position:absolute; font-size:11px; color:#604f37; }
+    .summary { padding:0 20px 20px; }
+    .summary h3 { margin:0 0 8px; font-size:15px; }
+    .summary ul { margin:0; padding-left:18px; color:#604f37; line-height:1.75; font-size:13px; }
+    .footer-note { margin-top:22px; padding:18px 20px; border:1px solid #d8c08a; border-radius:22px; background:rgba(255,250,240,.75); color:#5b4630; }
+    @media (max-width:1300px) { .options { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <small>HOME PAGE LAYOUT OPTIONS</small>
+        <h1>首页布局示意图：真实文字 Demo 版</h1>
+        <p>整体使用 B 酒店经营管理后台风格；所有占位框已换成具体页面文字、指标和操作按钮。</p>
+      </div>
+      <p>选定首页后，再继续画“数据查询页”的具体 demo。</p>
+    </header>
+
+    <section class="options">
+      <article class="card">
+        <div class="card-head">
+          <h2>方案 1：经营总览 + 服务状态 <span class="tag">推荐</span></h2>
+          <p>首页以经营指标和取消趋势为主，右侧放系统服务状态与启动演示环境按钮。</p>
+        </div>
+        <div class="mock">
+          <div class="browser">
+            <div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/dashboard/home</div></div>
+            <div class="layout">
+              <aside class="side">
+                <div class="brand">酒店预订<br/>风险分析</div>
+                <div class="nav on">首页总览</div><div class="nav">数据查询</div><div class="nav">数据可视化</div><div class="nav">评估与预测</div>
+                <div class="side-service">
+                  <h4>系统服务</h4>
+                  <div class="side-service-row"><span><i></i><b>Web</b></span><em>运行中</em></div>
+                  <div class="side-service-row"><span><i></i><b>MySQL</b></span><em>运行中</em></div>
+                  <div class="side-service-row"><span><i></i><b>Redis</b></span><em>运行中</em></div>
+                  <div class="side-service-row"><span><i></i><b>实时链路</b></span><em>运行中</em></div>
+                  <div class="side-demo">
+                    <h4>演示进度</h4>
+                    <div class="side-demo-row"><span>当前日期</span><em>2017-01-14</em></div>
+                    <div class="side-demo-row"><span>当前进度</span><em>156 / 244</em></div>
+                    <div class="side-demo-row"><span>下次日期</span><em>2017-01-15</em></div>
+                  </div>
+                  <div class="side-btn">启动演示环境</div>
+                  <div class="side-btn">开始订单模拟</div>
+                  <div class="side-btn secondary">停止模拟</div>
+                  <div class="side-btn secondary">刷新状态</div>
+                </div>
+              </aside>
+              <main class="main">
+                <div class="titlebar"><div><h3>酒店预订风险分析首页</h3><span>整体累计概览 + 今日风险态势 + 演示环境控制</span></div><div class="date">2026-05-30 今日</div></div>
+                <div class="section-label">整体经营概览 <span>当前总量随实时订单处理动态增长</span></div>
+                <div class="kpis"><div class="kpi"><small>当前总预订量</small><strong>80,256</strong><em>80,008 + 已处理订单</em></div><div class="kpi"><small>历史取消率</small><strong>37.04%</strong><em>基线历史统计</em></div><div class="kpi"><small>模型测试准确率</small><strong>86.7%</strong><em>测试集评估结果</em></div><div class="kpi"><small>当前高风险订单</small><strong>58</strong><em>实时模拟累计</em></div></div>
+                <div class="section-label">当前日期风险态势 <span>默认看当前演示日期，可切换周/月/季度/年</span></div>
+                <div class="kpis today"><div class="kpi"><small>当前日期订单数</small><strong>244</strong><em>2017-01-14</em></div><div class="kpi"><small>已完成预测</small><strong>156 / 244</strong><em>订单模拟运行中</em></div><div class="kpi"><small>平均取消概率</small><strong>43.2%</strong><em>当前日期均值</em></div><div class="kpi"><small>当前日期高风险</small><strong>42</strong><em>需重点关注</em></div></div>
+                <div class="grid2">
+                  <div class="panel"><h3>当前日期预订流入与取消风险趋势 <span class="range-tabs"><button class="on">日</button><button>周</button><button>月</button><button>季度</button><button>年</button></span></h3><div class="bars"><div class="bar-wrap"><div class="bar" style="height:35%"></div><div class="bar-label">08:00</div></div><div class="bar-wrap"><div class="bar green" style="height:48%"></div><div class="bar-label">10:00</div></div><div class="bar-wrap"><div class="bar" style="height:64%"></div><div class="bar-label">12:00</div></div><div class="bar-wrap"><div class="bar green" style="height:52%"></div><div class="bar-label">14:00</div></div><div class="bar-wrap"><div class="bar" style="height:82%"></div><div class="bar-label">16:00</div></div><div class="bar-wrap"><div class="bar green" style="height:69%"></div><div class="bar-label">18:00</div></div></div></div>
+                  <div class="panel"><h3>当前日期渠道风险分布 <span>业务辅助分析</span></h3><table class="table"><tr><th>渠道</th><th>当前日期订单</th><th>预测取消率</th></tr><tr><td>Online TA</td><td>126</td><td>43.6%</td></tr><tr><td>Groups</td><td>39</td><td>61.1%</td></tr><tr><td>Direct</td><td>44</td><td>18.9%</td></tr></table><div class="hint">演示控制已集中在左侧导航栏底部，首页主区域只保留业务风险分析内容。</div></div>
+                </div>
+                <div class="grid2">
+                  <div class="panel"><h3>当前日期高取消风险国家 Top 5 <span>地区风险</span></h3><table class="table"><tr><th>国家</th><th>当前日期订单</th><th>预测取消率</th></tr><tr><td>Portugal</td><td>86</td><td>56.6%</td></tr><tr><td>Spain</td><td>38</td><td>25.4%</td></tr><tr><td>France</td><td>31</td><td>18.5%</td></tr></table></div>
+                  <div class="panel"><h3>最新实时预测记录 <span>Redis 最近结果</span></h3><table class="table"><tr><th>订单</th><th>概率</th><th>风险</th></tr><tr><td>#BK1028</td><td>82%</td><td><span class="risk">高</span></td></tr><tr><td>#BK1029</td><td>61%</td><td><span class="risk mid">中</span></td></tr></table></div>
+                </div>
+              </main>
+            </div>
+          </div>
+        </div>
+        <div class="summary"><h3>为什么推荐</h3><ul><li>技术组件不抢首页主视觉。</li><li>老师仍能看到服务状态和一键启动能力。</li><li>经营总览、趋势、实时预测都有入口。</li></ul></div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <h2>方案 2：经营总览 + 地图亮点</h2>
+          <p>把国家风险地图放到首页主区域，服务状态放右下角。</p>
+        </div>
+        <div class="mock">
+          <div class="browser">
+            <div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/dashboard/home-map</div></div>
+            <div class="layout">
+              <aside class="side"><div class="brand">酒店预订<br/>风险分析</div><div class="nav on">首页总览</div><div class="nav">数据查询</div><div class="nav">数据可视化</div><div class="nav">评估与预测</div></aside>
+              <main class="main">
+                <div class="titlebar"><div><h3>地区取消风险总览</h3><span>突出不同国家来源客户的取消风险差异</span></div><div class="date">地图视图</div></div>
+                <div class="kpis"><div class="kpi"><small>总预订量</small><strong>119,390</strong><em>全量历史数据</em></div><div class="kpi"><small>涉及国家</small><strong>177</strong><em>country 字段</em></div><div class="kpi"><small>最高取消率</small><strong>56.6%</strong><em>Portugal</em></div><div class="kpi"><small>实时订单</small><strong>1,248</strong><em>今日模拟流入</em></div></div>
+                <div class="grid2"><div class="map"><b style="left:28%;top:48%"></b><label style="left:20%;top:62%">Portugal 56.6%</label><b style="left:50%;top:38%"></b><label style="left:47%;top:28%">France</label><b style="left:72%;top:58%"></b><label style="left:68%;top:70%">Asia</label></div><div class="panel"><h3>国家风险排名</h3><table class="table"><tr><th>国家</th><th>取消率</th></tr><tr><td>Portugal</td><td>56.6%</td></tr><tr><td>Brazil</td><td>37.3%</td></tr><tr><td>Germany</td><td>16.7%</td></tr></table></div></div>
+                <div class="grid2"><div class="panel"><h3>月度取消率趋势</h3><div class="bars"><div class="bar-wrap"><div class="bar" style="height:52%"></div><div class="bar-label">春</div></div><div class="bar-wrap"><div class="bar green" style="height:72%"></div><div class="bar-label">夏</div></div><div class="bar-wrap"><div class="bar" style="height:58%"></div><div class="bar-label">秋</div></div><div class="bar-wrap"><div class="bar green" style="height:81%"></div><div class="bar-label">冬</div></div></div></div><div class="panel"><h3>系统服务状态</h3><div class="service"><div class="service-row"><i></i><b>Web / MySQL</b><em>运行中</em></div><div class="service-row warn"><i></i><b>实时链路</b><em>未启动</em></div></div><div class="btns"><div class="btn">启动</div><div class="btn secondary">刷新</div></div></div></div>
+              </main>
+            </div>
+          </div>
+        </div>
+        <div class="summary"><h3>适合点</h3><ul><li>地图视觉更明显。</li><li>复杂数据可视化更有存在感。</li><li>缺点：首页会更像地图页，经营总览弱一些。</li></ul></div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <h2>方案 3：经营总览 + 预测记录</h2>
+          <p>更像真实后台首页，重点放最新风险订单和业务提醒。</p>
+        </div>
+        <div class="mock">
+          <div class="browser">
+            <div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/dashboard/home-risk</div></div>
+            <div class="layout">
+              <aside class="side"><div class="brand">酒店预订<br/>风险分析</div><div class="nav on">首页总览</div><div class="nav">数据查询</div><div class="nav">数据可视化</div><div class="nav">评估与预测</div></aside>
+              <main class="main">
+                <div class="titlebar"><div><h3>取消风险工作台</h3><span>帮助经营人员快速查看最新高风险预订</span></div><div class="date">风险视图</div></div>
+                <div class="grid2"><div class="kpis"><div class="kpi"><small>高风险订单</small><strong>86</strong><em>需关注</em></div><div class="kpi"><small>平均取消概率</small><strong>42%</strong><em>实时样本</em></div><div class="kpi"><small>今日流入</small><strong>1,248</strong><em>模拟事件</em></div><div class="kpi"><small>系统状态</small><strong>就绪</strong><em>可启动演示</em></div></div><div class="panel"><h3>演示环境</h3><div class="btns"><div class="btn">启动演示环境</div><div class="btn secondary">刷新</div></div><div class="hint">适合答辩前快速启动实时数据流。</div></div></div>
+                <div class="panel"><h3>月度预订量 + 取消率趋势</h3><div class="bars"><div class="bar-wrap"><div class="bar" style="height:62%"></div><div class="bar-label">1月</div></div><div class="bar-wrap"><div class="bar green" style="height:71%"></div><div class="bar-label">2月</div></div><div class="bar-wrap"><div class="bar" style="height:84%"></div><div class="bar-label">3月</div></div><div class="bar-wrap"><div class="bar green" style="height:68%"></div><div class="bar-label">4月</div></div><div class="bar-wrap"><div class="bar" style="height:78%"></div><div class="bar-label">5月</div></div></div></div>
+                <div class="grid2"><div class="panel"><h3>最新高风险订单</h3><table class="table"><tr><th>订单</th><th>客户类型</th><th>风险</th></tr><tr><td>#BK1030</td><td>Transient</td><td><span class="risk">高</span></td></tr><tr><td>#BK1031</td><td>Group</td><td><span class="risk mid">中</span></td></tr></table></div><div class="panel"><h3>渠道风险提醒</h3><table class="table"><tr><th>渠道</th><th>取消率</th></tr><tr><td>Online TA</td><td>36.7%</td></tr><tr><td>Groups</td><td>61.1%</td></tr></table></div></div>
+              </main>
+            </div>
+          </div>
+        </div>
+        <div class="summary"><h3>适合点</h3><ul><li>最像真实酒店管理系统。</li><li>高风险订单更突出。</li><li>缺点：课程可视化展示弱一些。</li></ul></div>
+      </article>
+    </section>
+
+    <div class="footer-note">我的推荐仍是方案 1：整体像酒店经营后台，服务状态不喧宾夺主，同时“启动演示环境”按钮能方便答辩演示。</div>
+  </div>
+</body>
+</html>

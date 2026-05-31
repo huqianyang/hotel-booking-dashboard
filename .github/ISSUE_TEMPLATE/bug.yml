@@ -1,0 +1,40 @@
+name: 问题修复
+
+description: 记录 bug、运行错误或页面异常
+
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题描述
+      description: 出现了什么异常？
+      placeholder: 例如：首页访问 500，或图表没有数据
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 按步骤写清楚怎么复现。
+      placeholder: |
+        1. 启动 Flask
+        2. 打开某页面
+        3. 点击某按钮
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果
+      description: 正常情况下应该看到什么？
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 错误日志或截图
+      description: 粘贴终端报错、浏览器控制台日志或截图说明。
+    validations:
+      required: false

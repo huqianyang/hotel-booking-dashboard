@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A/B 详细 UI 方案对比</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background: #0b1020;
+      color: #111827;
+    }
+    .page {
+      min-height: 100vh;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(34,211,238,.18), transparent 28%),
+        radial-gradient(circle at 92% 12%, rgba(245,158,11,.14), transparent 26%),
+        linear-gradient(135deg, #050816, #101827 54%, #0a1020);
+    }
+    .hero {
+      color: #e5f3ff;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+    .hero small { color: #67e8f9; letter-spacing: .32em; }
+    .hero h1 { margin: 10px 0 8px; font-size: 34px; }
+    .hero p { margin: 0; color: #9fb5c8; }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .pill { border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 8px 12px; color: #cbd5e1; background: rgba(255,255,255,.06); font-size: 12px; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    .方案 { border-radius: 30px; overflow: hidden; box-shadow: 0 28px 80px rgba(0,0,0,.36); }
+    .方案头 { padding: 22px 24px; display:flex; justify-content:space-between; align-items:center; gap: 16px; }
+    .方案头 h2 { margin: 0; font-size: 25px; }
+    .方案头 p { margin: 8px 0 0; font-size: 13px; line-height: 1.6; }
+    .badge { padding: 7px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; white-space: nowrap; }
+    .screens { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 20px; }
+    .screen { border-radius: 22px; overflow: hidden; min-height: 300px; }
+    .screen-title { display:flex; justify-content:space-between; align-items:center; padding: 14px 16px; font-size: 14px; font-weight: 700; }
+    .mini-layout { display:grid; grid-template-columns: 132px 1fr; min-height: 260px; }
+    .nav { padding: 14px 10px; }
+    .nav .logo { height: 42px; border-radius: 14px; margin-bottom: 14px; }
+    .nav span { display:block; height: 30px; border-radius: 11px; margin: 8px 0; }
+    .content { padding: 14px; }
+    .kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+    .kpi { border-radius: 15px; padding: 10px; min-height: 62px; }
+    .kpi small { display:block; font-size: 10px; margin-bottom: 6px; }
+    .kpi strong { font-size: 18px; }
+    .grid2 { display:grid; grid-template-columns: 1.35fr .9fr; gap: 12px; }
+    .grid3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .panel { border-radius: 17px; padding: 12px; min-height: 112px; position: relative; overflow: hidden; }
+    .panel h4 { margin: 0 0 10px; font-size: 12px; }
+    .bars { height: 82px; display:flex; align-items:flex-end; gap: 7px; }
+    .bars i { flex: 1; border-radius: 8px 8px 0 0; display:block; }
+    .table { display:grid; gap: 7px; }
+    .row { height: 25px; border-radius: 9px; display:grid; grid-template-columns: 1fr .7fr .5fr; gap: 8px; padding: 6px; }
+    .row i { border-radius: 999px; }
+    .form { display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .field { height: 34px; border-radius: 10px; }
+    .map { min-height: 120px; border-radius: 18px; position:relative; }
+    .map b { position:absolute; width: 14px; height:14px; border-radius:50%; }
+    .tabs { display:flex; gap: 8px; margin-bottom: 10px; }
+    .tabs span { height: 28px; flex:1; border-radius:999px; }
+    .flow { display:flex; align-items:center; gap: 8px; margin-top: 10px; }
+    .flow span { flex:1; border-radius: 13px; padding: 9px 6px; font-size: 10px; text-align:center; }
+    .flow em { font-style: normal; font-weight: 900; }
+    .a { background: linear-gradient(145deg, rgba(5,13,28,.96), rgba(8,36,60,.94)); border: 1px solid rgba(103,232,249,.28); }
+    .a .方案头 { background: linear-gradient(120deg, rgba(3,10,22,.98), rgba(8,47,73,.88)); color: #e0faff; border-bottom: 1px solid rgba(103,232,249,.24); }
+    .a .方案头 p { color:#91bad0; }
+    .a .badge { background: rgba(34,211,238,.14); color:#a5f3fc; border: 1px solid rgba(34,211,238,.36); }
+    .a .screen { background: radial-gradient(circle at 20% 0, rgba(34,211,238,.12), transparent 35%), #061321; border: 1px solid rgba(103,232,249,.22); color:#dff8ff; }
+    .a .screen-title { background: rgba(2,8,20,.72); border-bottom: 1px solid rgba(103,232,249,.18); color:#bff7ff; }
+    .a .nav { background: rgba(2,8,20,.72); border-right: 1px solid rgba(103,232,249,.16); }
+    .a .nav .logo { background: linear-gradient(135deg, #06b6d4, #1d4ed8); box-shadow: 0 0 24px rgba(34,211,238,.32); }
+    .a .nav span { background: rgba(34,211,238,.08); border: 1px solid rgba(34,211,238,.14); }
+    .a .nav span:first-of-type { background: rgba(34,211,238,.18); }
+    .a .kpi, .a .panel { background: rgba(8,27,47,.9); border: 1px solid rgba(103,232,249,.2); box-shadow: inset 0 0 24px rgba(34,211,238,.04); }
+    .a .kpi small { color:#82aabd; }
+    .a .kpi strong { color:#67e8f9; }
+    .a .bars i { background: linear-gradient(to top, rgba(8,145,178,.55), #67e8f9); box-shadow: 0 0 18px rgba(34,211,238,.22); }
+    .a .bars i:nth-child(3n) { background: linear-gradient(to top, rgba(234,88,12,.56), #fb923c); }
+    .a .row { background: rgba(2,8,20,.52); border: 1px solid rgba(148,163,184,.12); }
+    .a .row i { background: rgba(103,232,249,.22); }
+    .a .field { background: rgba(2,8,20,.6); border: 1px solid rgba(103,232,249,.18); }
+    .a .map { background: linear-gradient(135deg, rgba(8,47,73,.8), rgba(15,23,42,.9)); border: 1px solid rgba(103,232,249,.18); }
+    .a .map b { background:#fb923c; box-shadow:0 0 18px #fb923c; }
+    .a .tabs span { background: rgba(34,211,238,.12); border: 1px solid rgba(34,211,238,.2); }
+    .a .tabs span:first-child { background: rgba(34,211,238,.28); }
+    .a .flow span { background: rgba(34,211,238,.1); border:1px solid rgba(34,211,238,.2); color:#ccfbf1; }
+    .a .flow em { color:#67e8f9; }
+    .b { background: linear-gradient(145deg, #f5efe0, #fffaf0); border: 1px solid #d6c28d; }
+    .b .方案头 { background: linear-gradient(120deg, #fff7e6, #efe1bd); color: #2a2116; border-bottom: 1px solid #d8bf82; }
+    .b .方案头 p { color:#776247; }
+    .b .badge { background: #1f4d3a; color:#ecfdf5; border: 1px solid rgba(31,77,58,.16); }
+    .b .screen { background: #fffaf1; border: 1px solid #dec995; color:#2d2418; }
+    .b .screen-title { background: #fff3d8; border-bottom: 1px solid #dec995; color:#3b2f1f; }
+    .b .nav { background: #f3e7ca; border-right: 1px solid #d8c18b; }
+    .b .nav .logo { background: linear-gradient(135deg, #184c3b, #c4902f); }
+    .b .nav span { background: #fff9ec; border: 1px solid #dcc894; }
+    .b .nav span:first-of-type { background: #1f4d3a; }
+    .b .kpi, .b .panel { background: rgba(255,255,255,.78); border: 1px solid #e4d3a7; box-shadow: 0 12px 30px rgba(84,63,28,.08); }
+    .b .kpi small { color:#7b6a53; }
+    .b .kpi strong { color:#184c3b; }
+    .b .bars i { background: linear-gradient(to top, #c28b26, #f2c66a); }
+    .b .bars i:nth-child(3n) { background: linear-gradient(to top, #1f6f52, #67b88a); }
+    .b .row { background: #fffdf6; border: 1px solid #e6d8b4; }
+    .b .row i { background: #d8c18b; }
+    .b .field { background: #fffdf8; border: 1px solid #d9c58f; }
+    .b .map { background: linear-gradient(135deg, #f3e7ca, #fffaf1); border: 1px solid #dec995; }
+    .b .map b { background:#b45309; box-shadow:0 0 12px rgba(180,83,9,.45); }
+    .b .tabs span { background: #fff7e6; border: 1px solid #dfc789; }
+    .b .tabs span:first-child { background: #1f4d3a; }
+    .b .flow span { background:#fff9ec; border:1px solid #dfc789; color:#4b3c26; }
+    .b .flow em { color:#9a6a16; }
+    .notes { display:grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; color:#dbeafe; }
+    .note { border: 1px solid rgba(255,255,255,.14); border-radius: 24px; padding: 20px; background: rgba(255,255,255,.06); }
+    .note h3 { margin: 0 0 12px; }
+    .note ul { margin: 0; padding-left: 18px; color:#cbd5e1; line-height: 1.85; }
+    @media (max-width: 1100px) {
+      .compare, .notes { grid-template-columns: 1fr; }
+      .hero { display:block; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div>
+        <small>DETAILED UI COMPARISON</small>
+        <h1>酒店预订数据可视化分析与预测系统：A/B 详细 UI 图</h1>
+        <p>用于选择后续四页原型方向：首页、数据查询、数据可视化、评估与预测。</p>
+      </div>
+      <div class="legend">
+        <span class="pill">MySQL 查询 / 新增 / 修改 / 逻辑删除</span>
+        <span class="pill">Redis 实时缓存</span>
+        <span class="pill">Flume → Kafka → Java Storm</span>
+        <span class="pill">取消率预测</span>
+      </div>
+    </header>
+
+    <main class="compare">
+      <section class="方案 a">
+        <div class="方案头">
+          <div>
+            <h2>A 深色科技数据大屏</h2>
+            <p>视觉重点是“实时、链路、风控、预测”。适合展示大数据组件和数据可视化效果，答辩时更有冲击力。</p>
+          </div>
+          <span class="badge">推荐主风格</span>
+        </div>
+        <div class="screens">
+          <article class="screen">
+            <div class="screen-title"><span>首页：实时风险指挥舱</span><span>大屏感</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content">
+                <div class="kpis"><div class="kpi"><small>总预订</small><strong>119,390</strong></div><div class="kpi"><small>取消率</small><strong>37.04%</strong></div><div class="kpi"><small>高风险</small><strong>86</strong></div><div class="kpi"><small>链路状态</small><strong>RUN</strong></div></div>
+                <div class="grid2"><div class="panel"><h4>实时预订流入与取消概率</h4><div class="bars"><i style="height:45%"></i><i style="height:70%"></i><i style="height:58%"></i><i style="height:82%"></i><i style="height:64%"></i><i style="height:74%"></i><i style="height:51%"></i></div></div><div class="panel"><h4>数据链路</h4><div class="flow"><span>Flume</span><em>→</em><span>Kafka</span><em>→</em><span>Storm</span><em>→</em><span>Redis</span></div></div></div>
+              </div>
+            </div>
+          </article>
+          <article class="screen">
+            <div class="screen-title"><span>数据查询：暗色表格 + 风险标签</span><span>数据库操作</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content"><div class="form"><div class="field"></div><div class="field"></div><div class="field"></div></div><div class="panel" style="margin-top:12px"><h4>MySQL 预订记录</h4><div class="table"><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div></div></div></div>
+            </div>
+          </article>
+          <article class="screen">
+            <div class="screen-title"><span>数据可视化：五类图表联动</span><span>课程重点</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content"><div class="tabs"><span></span><span></span><span></span><span></span><span></span></div><div class="grid2"><div class="panel"><h4>月份趋势 / 特征关系</h4><div class="bars"><i style="height:50%"></i><i style="height:76%"></i><i style="height:61%"></i><i style="height:88%"></i><i style="height:66%"></i></div></div><div class="map"><b style="left:28%;top:42%"></b><b style="left:54%;top:36%"></b><b style="left:70%;top:58%"></b></div></div></div>
+            </div>
+          </article>
+          <article class="screen">
+            <div class="screen-title"><span>评估与预测：风险概率雷达</span><span>模型展示</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content"><div class="grid3"><div class="panel"><h4>逻辑回归</h4><div class="bars"><i style="height:62%"></i><i style="height:55%"></i><i style="height:70%"></i></div></div><div class="panel"><h4>随机森林</h4><div class="bars"><i style="height:86%"></i><i style="height:79%"></i><i style="height:91%"></i></div></div><div class="panel"><h4>单条预测</h4><div class="field"></div><div class="field" style="margin-top:8px"></div></div></div></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="方案 b">
+        <div class="方案头">
+          <div>
+            <h2>B 酒店经营管理后台</h2>
+            <p>视觉重点是“真实业务、清楚表单、可操作后台”。适合展示 MySQL CRUD、查询筛选、管理系统完整性。</p>
+          </div>
+          <span class="badge">偏稳妥商务</span>
+        </div>
+        <div class="screens">
+          <article class="screen">
+            <div class="screen-title"><span>首页：经营概览中心</span><span>业务后台</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content">
+                <div class="kpis"><div class="kpi"><small>预订总量</small><strong>119,390</strong></div><div class="kpi"><small>取消率</small><strong>37.04%</strong></div><div class="kpi"><small>平均房价</small><strong>101.8</strong></div><div class="kpi"><small>高风险订单</small><strong>86</strong></div></div>
+                <div class="grid2"><div class="panel"><h4>酒店经营趋势</h4><div class="bars"><i style="height:48%"></i><i style="height:66%"></i><i style="height:76%"></i><i style="height:60%"></i><i style="height:83%"></i><i style="height:68%"></i></div></div><div class="panel"><h4>今日业务状态</h4><div class="table"><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div></div></div></div>
+              </div>
+            </div>
+          </article>
+          <article class="screen">
+            <div class="screen-title"><span>数据查询：浅色表单 + 清晰表格</span><span>CRUD 最清楚</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content"><div class="form"><div class="field"></div><div class="field"></div><div class="field"></div></div><div class="panel" style="margin-top:12px"><h4>预订记录管理</h4><div class="table"><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div></div></div></div>
+            </div>
+          </article>
+          <article class="screen">
+            <div class="screen-title"><span>数据可视化：经营分析报表</span><span>可读性强</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content"><div class="tabs"><span></span><span></span><span></span><span></span><span></span></div><div class="grid2"><div class="panel"><h4>取消趋势 / 渠道占比</h4><div class="bars"><i style="height:60%"></i><i style="height:72%"></i><i style="height:55%"></i><i style="height:80%"></i><i style="height:66%"></i></div></div><div class="map"><b style="left:28%;top:42%"></b><b style="left:54%;top:36%"></b><b style="left:70%;top:58%"></b></div></div></div>
+            </div>
+          </article>
+          <article class="screen">
+            <div class="screen-title"><span>评估与预测：表单式预测工作台</span><span>操作自然</span></div>
+            <div class="mini-layout">
+              <aside class="nav"><div class="logo"></div><span></span><span></span><span></span><span></span></aside>
+              <div class="content"><div class="grid3"><div class="panel"><h4>输入预订信息</h4><div class="field"></div><div class="field" style="margin-top:8px"></div></div><div class="panel"><h4>模型指标</h4><div class="bars"><i style="height:72%"></i><i style="height:84%"></i><i style="height:76%"></i></div></div><div class="panel"><h4>预测结果</h4><div class="kpi"><small>取消概率</small><strong>78%</strong></div></div></div></div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <section class="notes">
+      <div class="note">
+        <h3>A 适合你如果更想要“看起来厉害”</h3>
+        <ul>
+          <li>更突出实时链路、Redis、Storm 和风险监控。</li>
+          <li>视觉冲击强，适合课程数据可视化展示。</li>
+          <li>缺点是数据查询表格需要刻意做清楚，否则暗色表格可能读起来累。</li>
+        </ul>
+      </div>
+      <div class="note">
+        <h3>B 适合你如果更想要“老师一眼看懂”</h3>
+        <ul>
+          <li>表单、查询、增删改查和预测输入更自然。</li>
+          <li>偏真实业务系统，报告里更容易解释页面职责。</li>
+          <li>缺点是大数据实时链路的科技感弱，视觉记忆点不如 A。</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>界面页面原型预览</title>
+  <style>
+    :root {
+      --bg: #06111f;
+      --panel: rgba(9, 25, 45, 0.88);
+      --panel2: rgba(12, 35, 62, 0.82);
+      --line: rgba(103, 232, 249, 0.24);
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --orange: #fb923c;
+      --red: #f87171;
+      --green: #34d399;
+      --text: #e5f3ff;
+      --muted: #8fb3c9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 15% 8%, rgba(34, 211, 238, .18), transparent 30%),
+        radial-gradient(circle at 85% 5%, rgba(96, 165, 250, .16), transparent 28%),
+        linear-gradient(135deg, #040b14, var(--bg) 55%, #07172a);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; padding: 26px 20px;
+      background: rgba(3, 10, 22, .82); border-right: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+    .brand { margin-bottom: 26px; }
+    .brand small { color: var(--cyan); letter-spacing: .24em; font-size: 11px; }
+    .brand h1 { font-size: 20px; line-height: 1.3; margin: 10px 0 8px; }
+    .brand p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .nav button {
+      width: 100%; margin: 6px 0; padding: 12px 14px; border: 1px solid transparent;
+      border-radius: 14px; background: transparent; color: #b9d8e9; text-align: left;
+      cursor: pointer; font-size: 14px;
+    }
+    .nav button.active, .nav button:hover {
+      border-color: rgba(34, 211, 238, .35); background: rgba(34, 211, 238, .1); color: #ecfeff;
+    }
+    .status-box { margin-top: 24px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(6, 20, 38, .75); }
+    .status-box p { margin: 6px 0; color: var(--muted); font-size: 12px; }
+    .status-dot { display:inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 14px var(--green); margin-right: 7px; }
+    main { padding: 24px; overflow: hidden; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+    .topbar h2 { margin: 0; font-size: 28px; }
+    .topbar p { margin: 6px 0 0; color: var(--muted); }
+    .badge { border: 1px solid rgba(34,211,238,.35); background: rgba(34,211,238,.1); color: #cffafe; padding: 8px 12px; border-radius: 999px; font-size: 12px; }
+    .page { display: none; animation: fade .18s ease; }
+    .page.active { display: block; }
+    @keyframes fade { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .grid { display: grid; gap: 16px; }
+    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .card { border: 1px solid var(--line); border-radius: 22px; background: linear-gradient(145deg, var(--panel), var(--panel2)); box-shadow: 0 18px 45px rgba(0,0,0,.25); padding: 18px; min-height: 90px; }
+    .metric small { color: var(--muted); display:block; margin-bottom: 9px; }
+    .metric strong { font-size: 28px; }
+    .cyan { color: var(--cyan); } .orange { color: var(--orange); } .red { color: var(--red); } .green { color: var(--green); } .blue { color: var(--blue); }
+    .chart { height: 250px; position: relative; overflow:hidden; }
+    .chart:before { content:""; position:absolute; inset: 52px 18px 18px; background: repeating-linear-gradient(to top, rgba(148, 163, 184, .08), rgba(148, 163, 184, .08) 1px, transparent 1px, transparent 44px); }
+    .bars { position:absolute; left: 26px; right: 26px; bottom: 24px; height: 160px; display:flex; align-items:flex-end; gap: 12px; }
+    .bar { flex: 1; min-width: 12px; border-radius: 8px 8px 0 0; background: linear-gradient(to top, rgba(34,211,238,.4), rgba(34,211,238,.95)); box-shadow: 0 0 18px rgba(34,211,238,.2); }
+    .bar.alt { background: linear-gradient(to top, rgba(251,146,60,.4), rgba(251,146,60,.95)); }
+    .chart-title { position:relative; z-index: 2; margin: 0 0 12px; font-size: 15px; color: #dffbff; }
+    .pipeline { display:flex; align-items:center; gap: 12px; margin-top: 14px; }
+    .node { flex:1; border:1px solid rgba(34,211,238,.28); background: rgba(3, 13, 29, .6); border-radius: 16px; padding: 14px; text-align:center; }
+    .arrow { color: var(--cyan); font-weight: 700; }
+    .form-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .field { background: rgba(3, 13, 29, .55); border: 1px solid rgba(148, 163, 184, .2); border-radius: 13px; padding: 11px 12px; color: var(--muted); font-size: 13px; }
+    .button { background: linear-gradient(90deg, #0891b2, #2563eb); border:0; color:white; border-radius: 14px; padding: 13px 18px; font-weight:700; }
+    table { width:100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align:left; padding: 12px; border-bottom: 1px solid rgba(148, 163, 184, .15); }
+    th { color: #bae6fd; font-weight: 600; }
+    td { color: #d5e7f2; }
+    .risk-pill { padding: 4px 9px; border-radius: 999px; font-size: 12px; background: rgba(248,113,113,.15); color: #fecaca; border:1px solid rgba(248,113,113,.28); }
+    .overview { margin-top: 18px; }
+    .thumb { min-height: 170px; padding: 14px; border-radius: 20px; border: 1px solid rgba(103,232,249,.2); background: rgba(3, 13, 29, .52); cursor:pointer; }
+    .thumb:hover { border-color: rgba(34,211,238,.55); transform: translateY(-2px); transition:.15s; }
+    .thumb h4 { margin: 0 0 12px; }
+    .mini-row { display:flex; gap: 7px; margin: 8px 0; }
+    .mini { height: 26px; flex:1; border-radius: 8px; background: rgba(34,211,238,.18); border:1px solid rgba(34,211,238,.18); }
+    .mini.big { height: 72px; }
+    .mini.orange { background: rgba(251,146,60,.18); }
+    .mini.red { background: rgba(248,113,113,.16); }
+    .map { height: 250px; border-radius: 18px; background: radial-gradient(circle at 38% 44%, rgba(34,211,238,.8) 0 4px, transparent 5px), radial-gradient(circle at 55% 52%, rgba(251,146,60,.9) 0 5px, transparent 6px), radial-gradient(circle at 70% 35%, rgba(96,165,250,.8) 0 4px, transparent 5px), linear-gradient(145deg, rgba(12,35,62,.85), rgba(3,13,29,.65)); border: 1px solid var(--line); }
+    .score { width: 170px; height:170px; border-radius:50%; display:grid; place-items:center; margin:auto; background: conic-gradient(var(--red) 0 34%, rgba(148,163,184,.18) 34% 100%); }
+    .score span { width:128px; height:128px; border-radius:50%; background:#071527; display:grid; place-items:center; font-size:32px; font-weight:700; color:#fecaca; }
+    .tag-list { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .tag { border:1px solid rgba(34,211,238,.25); background:rgba(34,211,238,.08); color:#cffafe; padding:8px 10px; border-radius:999px; font-size:12px; }
+    .matrix { display:grid; grid-template-columns: 80px repeat(2, 1fr); gap:8px; text-align:center; margin-top:18px; }
+    .matrix div { padding:12px; border-radius:12px; background:rgba(3,13,29,.58); border:1px solid rgba(148,163,184,.18); }
+    .roc { height:220px; border-radius:18px; border:1px solid var(--line); background: linear-gradient(135deg, transparent 49%, rgba(148,163,184,.22) 50%, transparent 51%), radial-gradient(circle at 68% 32%, rgba(34,211,238,.5), transparent 4px), linear-gradient(145deg, rgba(12,35,62,.85), rgba(3,13,29,.65)); position:relative; overflow:hidden; }
+    .roc:after { content:"ROC AUC = 0.91"; position:absolute; right:18px; top:18px; color:#cffafe; font-size:13px; }
+    .roc svg { position:absolute; inset:18px; width:calc(100% - 36px); height:calc(100% - 36px); }
+    @media (max-width: 1200px) { .app { grid-template-columns: 1fr; } .sidebar { position:relative; height:auto; } .cols-4,.cols-5 { grid-template-columns: repeat(2,1fr); } .cols-3 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <small>HOTEL DATA OPS</small>
+        <h1>酒店预订数据可视化分析与预测系统</h1>
+        <p>完整页面原型预览：可点击切换页面，也可在总览中查看五页缩略布局。</p>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="active" data-page="home">首页总览</button>
+        <button data-page="history">历史分析页面</button>
+        <button data-page="predict">预测分析页面</button>
+        <button data-page="realtime">实时看板页面</button>
+        <button data-page="model">模型评估页面</button>
+      </nav>
+      <div class="status-box">
+        <p><span class="status-dot"></span>Flume / Kafka / Storm 运行中</p>
+        <p>MySQL 已连接 · 模型 API 正常</p>
+        <p>当前风格：深色科技数据大屏</p>
+      </div>
+    </aside>
+
+    <main>
+      <section class="page active" id="home">
+        <div class="topbar"><div><h2>首页总览</h2><p>展示系统核心指标、业务趋势、取消风险和实时链路状态。</p></div><span class="badge">大屏主视觉</span></div>
+        <div class="grid cols-4">
+          <div class="card metric"><small>历史预订总量</small><strong class="cyan">119,390</strong></div>
+          <div class="card metric"><small>整体取消率</small><strong class="orange">37.04%</strong></div>
+          <div class="card metric"><small>实时高风险订单</small><strong class="red">86</strong></div>
+          <div class="card metric"><small>模型 AUC</small><strong class="green">0.91</strong></div>
+        </div>
+        <div class="grid cols-3" style="margin-top:16px; grid-template-columns: 2fr 1fr;">
+          <div class="card chart"><p class="chart-title">月度预订量与取消量趋势（PyECharts 柱状/折线组合图）</p><div class="bars"><i class="bar" style="height:45%"></i><i class="bar" style="height:62%"></i><i class="bar alt" style="height:52%"></i><i class="bar" style="height:76%"></i><i class="bar alt" style="height:69%"></i><i class="bar" style="height:86%"></i><i class="bar alt" style="height:58%"></i><i class="bar" style="height:72%"></i></div></div>
+          <div class="card"><p class="chart-title">实时分析链路</p><div class="pipeline" style="flex-direction:column"><div class="node">CSV / 业务日志</div><div class="arrow">↓</div><div class="node">Flume 采集</div><div class="arrow">↓</div><div class="node">Kafka 缓冲</div><div class="arrow">↓</div><div class="node">Storm 预测与聚合</div></div></div>
+        </div>
+        <div class="grid cols-4" style="margin-top:16px">
+          <div class="card metric"><small>原始 CSV 数据</small><strong class="cyan">119,390</strong><div class="tag-list"><span class="tag">32 个字段</span></div></div>
+          <div class="card metric"><small>清洗后有效数据</small><strong class="green">118,898</strong><div class="tag-list"><span class="tag">缺失值处理</span></div></div>
+          <div class="card metric"><small>特征工程字段</small><strong class="blue">48</strong><div class="tag-list"><span class="tag">One-Hot</span><span class="tag">时间特征</span></div></div>
+          <div class="card metric"><small>MySQL 入库状态</small><strong class="green">已完成</strong><div class="tag-list"><span class="tag">hotel_bookings</span></div></div>
+        </div>
+        <div class="overview">
+          <div class="topbar"><div><h2 style="font-size:22px">五页缩略总览</h2><p>点击任意缩略卡片可切换到对应页面。</p></div></div>
+          <div class="grid cols-5">
+            <div class="thumb" data-page="home"><h4>首页</h4><div class="mini-row"><i class="mini"></i><i class="mini orange"></i><i class="mini red"></i></div><div class="mini big"></div></div>
+            <div class="thumb" data-page="history"><h4>历史分析</h4><div class="mini big"></div><div class="mini-row"><i class="mini"></i><i class="mini"></i></div></div>
+            <div class="thumb" data-page="predict"><h4>预测分析</h4><div class="mini-row"><i class="mini big"></i><i class="mini big red"></i></div><div class="mini-row"><i class="mini"></i><i class="mini"></i></div></div>
+            <div class="thumb" data-page="realtime"><h4>实时看板</h4><div class="mini-row"><i class="mini"></i><i class="mini orange"></i></div><div class="mini big red"></div></div>
+            <div class="thumb" data-page="model"><h4>模型评估</h4><div class="mini big"></div><div class="mini-row"><i class="mini"></i><i class="mini green"></i></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="history">
+        <div class="topbar"><div><h2>历史分析页面</h2><p>用于查看 CSV 历史数据的趋势、国家来源、酒店类型和客户画像。</p></div><span class="badge">业务后台细节页</span></div>
+        <div class="grid cols-4"><div class="card metric"><small>城市酒店占比</small><strong class="blue">66.4%</strong></div><div class="card metric"><small>度假酒店占比</small><strong class="cyan">33.6%</strong></div><div class="card metric"><small>平均提前天数</small><strong class="orange">104</strong></div><div class="card metric"><small>平均房价 ADR</small><strong class="green">101.8</strong></div></div>
+        <div class="grid cols-2" style="margin-top:16px"><div class="card chart"><p class="chart-title">酒店类型 × 月份预订趋势（PyECharts 多系列柱状图）</p><div class="bars"><i class="bar" style="height:50%"></i><i class="bar" style="height:72%"></i><i class="bar" style="height:65%"></i><i class="bar alt" style="height:88%"></i><i class="bar" style="height:60%"></i><i class="bar alt" style="height:46%"></i></div></div><div class="card"><p class="chart-title">客源国家分布（PyECharts 地图/散点图）</p><div class="map"></div></div></div>
+        <div class="grid cols-2" style="margin-top:16px">
+          <div class="card chart"><p class="chart-title">市场渠道取消率分析（Online TA / Groups / Direct）</p><div class="bars"><i class="bar alt" style="height:80%"></i><i class="bar" style="height:42%"></i><i class="bar alt" style="height:68%"></i><i class="bar" style="height:35%"></i><i class="bar" style="height:52%"></i></div></div>
+          <div class="card"><p class="chart-title">客户分群画像（K-Means 可选展示）</p><div class="tag-list"><span class="tag">高提前预订商务客</span><span class="tag">低价格敏感客</span><span class="tag">团体高取消风险</span><span class="tag">短周期稳定入住</span></div><table style="margin-top:14px"><thead><tr><th>分群</th><th>占比</th><th>取消率</th><th>典型特征</th></tr></thead><tbody><tr><td>C1</td><td>31%</td><td>42%</td><td>提前天数高</td></tr><tr><td>C2</td><td>27%</td><td>18%</td><td>特殊需求多</td></tr></tbody></table></div>
+        </div>
+        <div class="card" style="margin-top:16px"><p class="chart-title">历史预订明细表</p><table><thead><tr><th>booking_id</th><th>酒店类型</th><th>国家</th><th>提前天数</th><th>ADR</th><th>是否取消</th></tr></thead><tbody><tr><td>100231</td><td>City Hotel</td><td>PRT</td><td>87</td><td>98.6</td><td><span class="risk-pill">已取消</span></td></tr><tr><td>100232</td><td>Resort Hotel</td><td>GBR</td><td>34</td><td>121.0</td><td>未取消</td></tr></tbody></table></div>
+      </section>
+
+      <section class="page" id="predict">
+        <div class="topbar"><div><h2>预测分析页面</h2><p>人工输入预订特征，调用 Flask 模型 API，输出取消风险和解释性特征。</p></div><span class="badge">表单 + 风险解释</span></div>
+        <div class="grid" style="grid-template-columns: 1.25fr .75fr;">
+          <div class="card"><p class="chart-title">预订取消预测表单</p><div class="form-grid"><div class="field">酒店类型：City Hotel</div><div class="field">提前预订天数：120</div><div class="field">国家：PRT</div><div class="field">市场渠道：Online TA</div><div class="field">客户类型：Transient</div><div class="field">ADR：98.5</div><div class="field">特殊需求数：0</div><div class="field">历史取消次数：1</div><button class="button">提交预测</button></div></div>
+          <div class="card"><p class="chart-title">预测结果</p><div class="score"><span>78%</span></div><p style="text-align:center;color:var(--muted)">高取消风险 · 建议重点跟进</p></div>
+        </div>
+        <div class="grid cols-2" style="margin-top:16px"><div class="card chart"><p class="chart-title">影响因素贡献</p><div class="bars"><i class="bar alt" style="height:90%"></i><i class="bar" style="height:66%"></i><i class="bar alt" style="height:50%"></i><i class="bar" style="height:36%"></i></div></div><div class="card"><p class="chart-title">最近预测记录</p><table><thead><tr><th>时间</th><th>booking_id</th><th>概率</th><th>等级</th></tr></thead><tbody><tr><td>10:24:01</td><td>100321</td><td>0.78</td><td><span class="risk-pill">高</span></td></tr><tr><td>10:24:08</td><td>100322</td><td>0.42</td><td>中</td></tr></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="realtime">
+        <div class="topbar"><div><h2>实时看板页面</h2><p>展示 Flume → Kafka → Storm 的运行状态、吞吐量、实时风险和窗口指标。</p></div><span class="badge">大屏主视觉</span></div>
+        <div class="grid cols-4"><div class="card metric"><small>当前处理量</small><strong class="cyan">1,248</strong></div><div class="card metric"><small>每分钟事件</small><strong class="blue">286</strong></div><div class="card metric"><small>窗口高风险</small><strong class="red">43</strong></div><div class="card metric"><small>平均预测概率</small><strong class="orange">0.62</strong></div></div>
+        <div class="card" style="margin-top:16px"><p class="chart-title">实时数据链路拓扑</p><div class="pipeline"><div class="node">booking_events.log<br><small class="muted">模拟预订日志</small></div><div class="arrow">→</div><div class="node">Flume Agent</div><div class="arrow">→</div><div class="node">Kafka Topic</div><div class="arrow">→</div><div class="node">Storm Topology</div><div class="arrow">→</div><div class="node">MySQL 指标表</div></div></div>
+        <div class="grid cols-2" style="margin-top:16px"><div class="card chart"><p class="chart-title">实时吞吐量曲线</p><div class="bars"><i class="bar" style="height:35%"></i><i class="bar" style="height:42%"></i><i class="bar" style="height:68%"></i><i class="bar alt" style="height:82%"></i><i class="bar" style="height:64%"></i><i class="bar alt" style="height:74%"></i></div></div><div class="card"><p class="chart-title">高风险事件流</p><table><thead><tr><th>时间</th><th>国家</th><th>概率</th><th>状态</th></tr></thead><tbody><tr><td>10:25:12</td><td>PRT</td><td>0.86</td><td><span class="risk-pill">已入库</span></td></tr><tr><td>10:25:18</td><td>ESP</td><td>0.72</td><td>处理中</td></tr></tbody></table></div></div>
+      </section>
+
+      <section class="page" id="model">
+        <div class="topbar"><div><h2>模型评估页面</h2><p>展示多个候选模型的准确率、召回率、F1、AUC 和最终模型选择依据。</p></div><span class="badge">评估对比页</span></div>
+        <div class="grid cols-4"><div class="card metric"><small>候选模型数</small><strong class="cyan">4</strong></div><div class="card metric"><small>最佳模型</small><strong class="green">RF</strong></div><div class="card metric"><small>最佳 F1</small><strong class="blue">0.88</strong></div><div class="card metric"><small>最佳 AUC</small><strong class="orange">0.91</strong></div></div>
+        <div class="grid" style="grid-template-columns: 1fr 1.2fr; margin-top:16px"><div class="card chart"><p class="chart-title">模型指标雷达/柱状对比（PyECharts Radar + Bar）</p><div class="bars"><i class="bar" style="height:68%"></i><i class="bar alt" style="height:74%"></i><i class="bar" style="height:88%"></i><i class="bar alt" style="height:82%"></i></div></div><div class="card"><p class="chart-title">模型评估结果表</p><table><thead><tr><th>模型</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>AUC</th><th>是否选中</th></tr></thead><tbody><tr><td>Logistic Regression</td><td>0.80</td><td>0.78</td><td>0.74</td><td>0.76</td><td>0.84</td><td>否</td></tr><tr><td>Random Forest</td><td>0.89</td><td>0.87</td><td>0.89</td><td>0.88</td><td>0.91</td><td><span class="risk-pill" style="color:#bbf7d0;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.13)">是</span></td></tr><tr><td>XGBoost</td><td>0.88</td><td>0.86</td><td>0.87</td><td>0.86</td><td>0.90</td><td>备选</td></tr></tbody></table></div></div>
+        <div class="grid cols-3" style="margin-top:16px; grid-template-columns: 1fr 1fr 1.1fr;">
+          <div class="card"><p class="chart-title">ROC 曲线（分类模型质量）</p><div class="roc"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="0,100 8,70 20,48 38,30 62,18 100,5" fill="none" stroke="#22d3ee" stroke-width="3"/><polyline points="0,100 100,0" fill="none" stroke="rgba(148,163,184,.4)" stroke-dasharray="4 4" stroke-width="1"/></svg></div></div>
+          <div class="card"><p class="chart-title">混淆矩阵</p><div class="matrix"><div></div><div>预测未取消</div><div>预测取消</div><div>实际未取消</div><div class="green">TN 18,420</div><div class="orange">FP 1,286</div><div>实际取消</div><div class="orange">FN 1,034</div><div class="green">TP 9,118</div></div></div>
+          <div class="card"><p class="chart-title">过拟合 / 欠拟合分析</p><table><thead><tr><th>数据集</th><th>F1</th><th>AUC</th></tr></thead><tbody><tr><td>训练集</td><td>0.90</td><td>0.93</td></tr><tr><td>测试集</td><td>0.88</td><td>0.91</td></tr></tbody></table><div class="tag-list"><span class="tag">差距 0.02</span><span class="tag">未明显过拟合</span><span class="tag">最终选择 Random Forest</span></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    function show(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === page));
+      document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('.nav button[data-page], .thumb[data-page]').forEach(btn => {
+      btn.addEventListener('click', event => {
+        event.preventDefault();
+        show(btn.dataset.page);
+      });
+    });
+  </script>
+</body>
+</html>

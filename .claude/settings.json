@@ -1,0 +1,394 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'SessionStart'; additionalContext = '【会话启动·强制规则重申】1. 必须先检查 skill 匹配 2. 设计类任务必须先调头脑风暴 3. 多步骤任务必须先建 task_plan.md/findings.md/progress.md（倒序：最新日期在上，同日最新记录写在当天标题下方第一条，禁止追加到文件末尾） 4. 每次改文件后必须更新 progress.md（倒序：最新日期在上，同日最新记录写在当天标题下方第一条，禁止追加到文件末尾） 5. 结束前必须更新所有过程文件。此规则全程有效，不因对话变长而弱化。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'SessionStart'; additionalContext = '【项目级 progress.md 顺序规则】progress.md 必须采用倒序日志：最新日期在最上方，同一天内最新记录也在最上方；更新时禁止追加到文件末尾，必须先读取现有文件，再把新条目插入当天日期标题下方第一条；若当天日期标题不存在，必须在文件最顶部新建当天标题。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'UserPromptSubmit'; additionalContext = '【强制·每次提问必查】1. 先检查 skill 匹配 2. 设计类任务必须调头脑风暴 3. 多步骤必须建过程文件 4. 此规则全程有效，不因任务简单或对话变长而跳过。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'UserPromptSubmit'; additionalContext = '【项目级 progress.md 顺序规则】progress.md 必须采用倒序日志：最新日期在最上方，同一天内最新记录也在最上方；更新时禁止追加到文件末尾，必须先读取现有文件，再把新条目插入当天日期标题下方第一条；若当天日期标题不存在，必须在文件最顶部新建当天标题。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'UserPromptExpansion'; additionalContext = '【斜杠命令展开】正在处理斜杠命令，检查是否匹配到对应 skill。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "if": "Bash(git reset --hard *)",
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PreToolUse'; permissionDecision = 'deny'; permissionDecisionReason = 'git reset --hard 已被 hook 拦截，可能导致代码丢失。请确认后再手动执行。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          },
+          {
+            "if": "Bash(git push --force *)",
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PreToolUse'; permissionDecision = 'deny'; permissionDecisionReason = 'git push --force 已被 hook 拦截，可能覆盖远程历史。请确认后再手动执行。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          },
+          {
+            "if": "Bash(rm -rf *)",
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PreToolUse'; permissionDecision = 'deny'; permissionDecisionReason = 'rm -rf 已被 hook 拦截，可能删除大量文件。请确认后再手动执行。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          },
+          {
+            "if": "Bash(git checkout -- .*)",
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PreToolUse'; permissionDecision = 'deny'; permissionDecisionReason = 'git checkout -- . 已被 hook 拦截，将丢弃所有未提交修改。请确认后再手动执行。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          },
+          {
+            "if": "Bash(git clean -fd*)",
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PreToolUse'; permissionDecision = 'deny'; permissionDecisionReason = 'git clean -fd 已被 hook 拦截，将删除所有未跟踪文件。请确认后再手动执行。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PermissionRequest'; additionalContext = '【权限请求】工具需要授权。检查操作安全性后批准。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PermissionDenied'; additionalContext = '【权限被拒】工具调用被拒绝。如果是误拦截的安全操作，需要手动授权。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "& \"$env:USERPROFILE/.claude/scripts/check-decision-record.ps1\""
+          },
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "if (Test-Path \".claude/scripts/check-progress-order.ps1\") { & \".claude/scripts/check-progress-order.ps1\" }"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "& \"$env:USERPROFILE/.claude/scripts/check-decision-record.ps1\""
+          },
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "if (Test-Path \".claude/scripts/check-progress-order.ps1\") { & \".claude/scripts/check-progress-order.ps1\" }"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PostToolUseFailure'; additionalContext = '【强制·错误必记录】工具调用失败，必须：1. 检查错误原因 2. 修复并重试 3. 在 progress.md 记录此错误和修复方法。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "PostToolBatch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "& \"$env:USERPROFILE/.claude/scripts/check-decision-record.ps1\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "& \"$env:USERPROFILE/.claude/scripts/check-decision-record.ps1\""
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'StopFailure'; additionalContext = '【强制·API 错误必记录】本轮因 API 错误结束，必须：1. 检查网络/模型状态 2. 在 progress.md 记录此异常 3. 确认已保存的工作状态。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'Notification'; additionalContext = '【通知】系统通知已触发，检查是否需要响应。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'SubagentStart'; additionalContext = '【子代理启动】派生子代理执行任务。子代理完成后必须将结果汇总到 progress.md。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'SubagentStop'; additionalContext = '【强制·子代理结果必记录】子代理已完成，必须将其关键输出和决策汇总到 progress.md。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'TaskCreated'; additionalContext = '【强制·任务创建必同步】新任务已创建，必须在 task_plan.md 中记录任务名称、描述和预期成果。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "& \"$env:USERPROFILE/.claude/scripts/check-decision-record.ps1\""
+          }
+        ]
+      }
+    ],
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'InstructionsLoaded'; additionalContext = '【指令加载·强制确认】CLAUDE.md 或项目规则已加载。确认已理解所有强制规则：skill 检查、过程文件、头脑风暴、设计确认。这些规则全程有效。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'ConfigChange'; additionalContext = '【强制·配置变更必记录】配置文件已变化，必须在 progress.md 记录变更内容和原因。确认变更不影响项目级 settings（cc switch 可能覆盖全局配置）。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "CwdChanged": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'CwdChanged'; additionalContext = '【强制·目录切换必检】工作目录已切换，必须：1. 检查新目录是否有 .claude/settings.json（无则创建）2. 检查是否有现有的过程文件需恢复。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "& \"$env:USERPROFILE/.claude/scripts/check-decision-record.ps1\""
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'PostCompact'; additionalContext = '【强制·压缩后必恢复】上下文压缩完成，必须立即重新读取 task_plan.md、progress.md、findings.md 恢复工作状态。不能依赖压缩前的记忆。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'SessionEnd'; additionalContext = '【强制·会话终止前必做】1. progress.md 已记录最后工作 2. task_plan.md 状态已更新 3. 所有文件已保存 4. 如有未完成事项已标注。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "Setup": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'Setup'; additionalContext = '【初始化模式】Claude Code 正在初始化或维护模式中。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'TeammateIdle'; additionalContext = '【队友闲置】代理团队成员即将进入闲置状态。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'WorktreeCreate'; additionalContext = '【工作树创建】正在创建新的 git 工作树。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'WorktreeRemove'; additionalContext = '【工作树删除】git 工作树正在被删除。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "Elicitation": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'Elicitation'; additionalContext = '【MCP 征询】MCP 服务器正在请求用户输入。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "ElicitationResult": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'ElicitationResult'; additionalContext = '【MCP 响应】用户已响应 MCP 征询请求。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          }
+        ]
+      }
+    ],
+    "FileChanged": [
+      {
+        "matcher": ".claude/settings.json|task_plan.md|findings.md|progress.md",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "[Console]::OutputEncoding = [Text.Encoding]::UTF8; $json = @{ hookSpecificOutput = @{ hookEventName = 'FileChanged'; additionalContext = '【文件变更】检测到项目关键文件被外部修改（可能是 cc switch 或其他工具覆盖）。立即检查变更内容是否安全。' } } | ConvertTo-Json -Compress; Write-Output $json"
+          },
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "if (Test-Path \".claude/scripts/check-progress-order.ps1\") { & \".claude/scripts/check-progress-order.ps1\" }"
+          }
+        ]
+      }
+    ]
+  }
+}

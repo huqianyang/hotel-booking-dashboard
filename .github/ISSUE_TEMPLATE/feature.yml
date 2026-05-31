@@ -1,0 +1,41 @@
+name: 功能任务
+
+description: 记录需要开发的新功能或课程模块
+
+title: "[Feature] "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 目标
+      description: 这个任务要完成什么功能？
+      placeholder: 例如：实现数据查询页的订单筛选接口
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 范围
+      description: 本次任务包含哪些页面、接口、数据表或脚本？
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: 负责成员
+      options:
+        - 成员 A：数据与算法
+        - 成员 B：后端、数据库与实时链路
+        - 成员 C：前端与可视化
+        - 待分配
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      description: 如何判断这个任务完成？
+      placeholder: 例如：接口返回 200，页面可展示查询结果，pytest 通过
+    validations:
+      required: true

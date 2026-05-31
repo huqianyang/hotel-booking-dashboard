@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>评估与预测页 UI 示例 - 三页签完整设计</title>
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; background:#f3ead6; color:#2f2619; }
+    .page { min-height:100vh; padding:30px; background:linear-gradient(135deg,#fff8e9,#efe0bd 58%,#f8f0df); }
+    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:22px; }
+    small { color:#8a661f; letter-spacing:.25em; font-weight:700; }
+    h1 { margin:8px 0; font-size:34px; }
+    p { margin:0; color:#725f43; line-height:1.65; }
+    .shell { border:1px solid #dec995; border-radius:28px; overflow:hidden; background:#fffdf7; box-shadow:0 28px 68px rgba(94,72,36,.18); }
+    .top { height:46px; background:#fff1d2; border-bottom:1px solid #dec995; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+    .dots { display:flex; gap:8px; }
+    .dot { width:10px; height:10px; border-radius:50%; background:#c4902f; opacity:.75; }
+    .url { color:#8a6d3f; font-size:12px; }
+    .layout { display:grid; grid-template-columns:190px 1fr; min-height:1260px; }
+    .side { background:#efe2c3; border-right:1px solid #dec995; padding:18px 14px; display:flex; flex-direction:column; }
+    .brand { height:64px; border-radius:18px; background:linear-gradient(135deg,#1f4d3a,#bd8a2b); color:white; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; margin-bottom:18px; text-align:center; line-height:1.2; }
+    .nav { min-height:40px; border-radius:13px; background:#fff8e9; border:1px solid #e1cc98; margin-bottom:10px; display:flex; align-items:center; padding:0 14px; font-size:15px; color:#614d2f; }
+    .nav.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .side-bottom { margin-top:auto; padding-top:16px; border-top:1px solid #d8c08a; }
+    .side-bottom h4 { margin:0 0 10px; font-size:15px; color:#5b4630; }
+    .side-row { display:flex; justify-content:space-between; align-items:center; min-height:27px; font-size:13px; color:#604f37; gap:8px; }
+    .side-row i { width:8px; height:8px; border-radius:50%; background:#1f8a5b; display:inline-block; margin-right:5px; }
+    .side-row em { font-style:normal; color:#1f4d3a; font-weight:800; }
+    .main { padding:22px; display:flex; flex-direction:column; gap:18px; }
+    .title { min-height:78px; border-radius:20px; background:#fff6e4; border:1px solid #ead7aa; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 20px; }
+    .title h2 { margin:0; font-size:26px; }
+    .title span { color:#80643b; font-size:14px; }
+    .btns,.tabs { display:flex; gap:9px; flex-wrap:wrap; }
+    .btn,.tab { border:1px solid #d8c08a; background:#fff8e9; color:#6b4f25; border-radius:999px; padding:9px 13px; font-size:14px; }
+    .btn.primary,.tab.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .section-label { display:flex; align-items:center; gap:10px; margin:2px 0 -4px; color:#6b4f25; font-weight:900; }
+    .section-label b { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#1f4d3a; color:#fff; }
+    .panel { background:#fff; border:1px solid #ead7aa; border-radius:22px; padding:18px; min-height:220px; position:relative; }
+    .panel h3 { margin:0 0 14px; font-size:20px; color:#3d2f1f; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .panel h3 span { font-size:13px; color:#8a6d3f; font-weight:400; }
+    .grid-main { display:grid; grid-template-columns:1.05fr .95fr; gap:16px; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .badge { border-radius:999px; padding:5px 9px; background:#fff3d8; color:#92400e; border:1px solid #e0c58c; font-size:12px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th { background:#fff3d8; color:#6b4f25; text-align:left; padding:10px; border-bottom:1px solid #ead7aa; }
+    td { padding:10px; border-bottom:1px solid #f1dfb6; color:#604f37; }
+    .searchbar { display:grid; grid-template-columns:1.2fr .9fr .9fr auto; gap:10px; margin-bottom:14px; }
+    .input { border:1px solid #d8c08a; background:#fffaf0; border-radius:14px; padding:11px 13px; color:#604f37; font-size:14px; }
+    .search-btn { border:none; border-radius:14px; padding:0 18px; background:#1f4d3a; color:#fff; font-weight:800; }
+    .order-card { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .field { border:1px solid #ead7aa; border-radius:14px; background:#fffaf0; padding:11px 12px; min-height:70px; }
+    .field label { display:block; font-size:12px; color:#8a6d3f; margin-bottom:7px; }
+    .field div { font-size:15px; color:#3d2f1f; font-weight:800; }
+    .risk-box { margin-top:14px; border-radius:22px; background:linear-gradient(135deg,#fff3d8,#fee2e2); border:1px solid #efc68c; padding:18px; display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center; }
+    .risk-score strong { display:block; color:#b91c1c; font-size:44px; line-height:1; margin-bottom:8px; }
+    .risk-score span { color:#604f37; }
+    .risk-level { justify-self:end; text-align:right; }
+    .risk-level b { display:inline-block; padding:8px 15px; border-radius:999px; background:#b91c1c; color:white; margin-bottom:9px; }
+    .risk-level p { font-size:13px; color:#604f37; }
+    .reason-list { display:grid; gap:12px; }
+    .reason { border:1px solid #ead7aa; border-radius:16px; padding:13px; background:#fffaf0; display:grid; grid-template-columns:42px 1fr auto; gap:12px; align-items:center; }
+    .reason .no { width:34px; height:34px; border-radius:50%; background:#1f4d3a; color:white; display:flex; align-items:center; justify-content:center; font-weight:900; }
+    .reason strong { color:#3d2f1f; display:block; margin-bottom:4px; }
+    .reason p { color:#725f43; font-size:13px; }
+    .reason em { font-style:normal; color:#b45309; font-weight:900; }
+    .action { border-left:5px solid #1f4d3a; background:#f4fbf6; padding:13px 15px; border-radius:15px; color:#355744; line-height:1.7; margin-top:14px; }
+    .metric { min-height:118px; border:1px solid #ead7aa; background:#fff; border-radius:18px; padding:14px; position:relative; }
+    .metric .name { font-size:14px; color:#604f37; margin-bottom:9px; }
+    .metric .value { font-size:30px; font-weight:900; color:#1f4d3a; }
+    .metric .sub { margin-top:8px; color:#8a6d3f; font-size:12px; }
+    .info { position:absolute; right:10px; top:10px; width:21px; height:21px; border-radius:50%; border:1px solid #d8c08a; background:#fff8e9; color:#8a661f; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px; cursor:help; }
+    .tip { display:none; position:absolute; right:6px; top:36px; z-index:20; width:235px; padding:12px 13px; border-radius:14px; background:#2f2619; color:#fff8e9; box-shadow:0 18px 38px rgba(47,38,25,.28); line-height:1.55; font-size:13px; font-weight:400; }
+    .tip:before { content:""; position:absolute; right:16px; top:-7px; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid #2f2619; }
+    .info:hover + .tip { display:block; }
+    .matrix { display:grid; grid-template-columns:110px 1fr 1fr; border:1px solid #ead7aa; border-radius:16px; overflow:hidden; }
+    .cell { min-height:56px; padding:10px; border-right:1px solid #ead7aa; border-bottom:1px solid #ead7aa; background:#fffaf0; font-size:13px; color:#604f37; display:flex; flex-direction:column; justify-content:center; gap:4px; }
+    .cell.head { background:#fff3d8; font-weight:800; color:#6b4f25; }
+    .cell.good { background:#e7f5ee; color:#1f6b4d; font-weight:800; }
+    .cell.bad { background:#fff7ed; color:#b45309; font-weight:800; }
+    .chart { height:230px; border:1px solid #ead7aa; border-radius:18px; background:linear-gradient(180deg,#fffaf0,#fff); position:relative; overflow:hidden; }
+    .roc { position:absolute; left:34px; right:28px; bottom:34px; top:24px; border-left:2px solid #d8c08a; border-bottom:2px solid #d8c08a; }
+    .roc svg { width:100%; height:100%; overflow:visible; }
+    .tag { border-radius:999px; padding:4px 9px; background:#e7f5ee; color:#1f6b4d; font-size:12px; font-weight:700; }
+    .tag.warn { background:#fff3d8; color:#92400e; }
+    .tag.danger { background:#fee2e2; color:#b91c1c; }
+    .record-bar { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:14px; }
+    .pill { border-radius:999px; border:1px solid #d8c08a; background:#fff8e9; color:#6b4f25; padding:8px 12px; font-size:13px; }
+    .progress { height:12px; background:#fff3d8; border:1px solid #ead7aa; border-radius:999px; overflow:hidden; }
+    .progress b { display:block; height:100%; background:linear-gradient(90deg,#1f4d3a,#78b58e); }
+    .mini-bars { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; align-items:end; height:170px; border-bottom:1px solid #ead7aa; padding-top:18px; }
+    .bar { border-radius:10px 10px 0 0; background:linear-gradient(to top,#b45309,#f0c060); min-height:24px; }
+    .bar.green { background:linear-gradient(to top,#1f4d3a,#78b58e); }
+    @media (max-width:1300px) { .layout,.grid-main,.grid-3,.grid-4,.grid-2,.order-card,.risk-box,.searchbar { grid-template-columns:1fr; } .risk-level { justify-self:start; text-align:left; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <small>MODEL WORKBENCH MOCKUP</small>
+        <h1>评估与预测页：三页签完整 UI</h1>
+        <p>将“订单预测 / 模型评估详情 / 批量预测记录”作为三个顶层页签分别绘制，避免默认页重复模型评估内容。</p>
+      </div>
+      <p>说明：这是同一页面的三个页签状态展示，实际开发时点击页签切换。</p>
+    </header>
+
+    <div class="shell">
+      <div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/prediction-workbench</div></div>
+      <div class="layout">
+        <aside class="side">
+          <div class="brand">酒店预订<br/>风险分析</div>
+          <div class="nav">首页总览</div>
+          <div class="nav">数据查询</div>
+          <div class="nav">数据可视化</div>
+          <div class="nav on">评估与预测</div>
+          <div class="side-bottom">
+            <h4>模型信息</h4>
+            <div class="side-row"><span><i></i><b>当前模型</b></span><em>随机森林</em></div>
+            <div class="side-row"><span><i></i><b>任务类型</b></span><em>二分类</em></div>
+            <div class="side-row"><span><i></i><b>标签</b></span><em>是否取消</em></div>
+            <div class="side-row"><span><i></i><b>状态</b></span><em>可预测</em></div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="title">
+            <div>
+              <h2>模型评估与订单预测</h2>
+              <span>选择订单或输入订单信息，查看取消概率、风险原因、模型评估和批量预测记录。</span>
+            </div>
+            <div class="btns"><span class="btn primary">订单预测</span><span class="btn">模型评估详情</span><span class="btn">批量预测记录</span></div>
+          </div>
+
+          <div class="section-label"><b>1</b><span>订单预测页签：先选择订单，再解释该订单为什么高风险</span></div>
+          <section class="panel">
+            <h3>选择订单 <span>可从历史订单、实时预测记录或手动输入中选择</span></h3>
+            <div class="searchbar">
+              <div class="input">订单编号 / 客户姓名 / 国家地区：HB10231</div>
+              <div class="input">风险等级：高风险</div>
+              <div class="input">来源：最近实时预测</div>
+              <button class="search-btn">查询订单</button>
+            </div>
+            <table>
+              <tr><th>选择</th><th>订单编号</th><th>酒店类型</th><th>客户来源</th><th>国家/地区</th><th>入住日期</th><th>当前状态</th></tr>
+              <tr><td>●</td><td>HB10231</td><td>城市酒店</td><td>在线旅行社</td><td>葡萄牙</td><td>2017-08-12</td><td><span class="tag danger">已选中</span></td></tr>
+              <tr><td>○</td><td>HB10245</td><td>度假酒店</td><td>团体订单</td><td>英国</td><td>2017-08-13</td><td><span class="tag warn">可预测</span></td></tr>
+              <tr><td>○</td><td>HB10262</td><td>城市酒店</td><td>直接预订</td><td>法国</td><td>2017-08-14</td><td><span class="tag">低风险</span></td></tr>
+            </table>
+          </section>
+
+          <section class="grid-main">
+            <div class="panel">
+              <h3>订单风险预测 <span class="badge">当前订单 HB10231</span></h3>
+              <div class="order-card">
+                <div class="field"><label>酒店类型</label><div>城市酒店</div></div>
+                <div class="field"><label>客户来源</label><div>在线旅行社</div></div>
+                <div class="field"><label>国家/地区</label><div>葡萄牙</div></div>
+                <div class="field"><label>提前预订天数</label><div>132 天</div></div>
+                <div class="field"><label>押金类型</label><div>不可退款</div></div>
+                <div class="field"><label>特殊需求</label><div>无特殊需求记录</div></div>
+              </div>
+              <div class="risk-box">
+                <div class="risk-score"><strong>78.6%</strong><span>预测取消概率</span></div>
+                <div class="risk-level"><b>高风险</b><p>该订单建议进入人工确认名单。</p></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>风险原因解释 <span>帮助业务人员理解预测结果</span></h3>
+              <div class="reason-list">
+                <div class="reason"><div class="no">1</div><div><strong>提前预订时间较长</strong><p>同类提前预订超过 120 天的订单，历史取消比例偏高。</p></div><em>影响高</em></div>
+                <div class="reason"><div class="no">2</div><div><strong>来源渠道取消率偏高</strong><p>在线旅行社渠道存在较多临时取消和价格比较行为。</p></div><em>影响中</em></div>
+                <div class="reason"><div class="no">3</div><div><strong>缺少特殊需求记录</strong><p>无特殊需求的订单客户黏性相对较弱。</p></div><em>影响中</em></div>
+              </div>
+              <div class="action"><strong>建议动作：</strong>入住前 3 天进行二次确认；如客户无响应，可提前调整房态或准备候补订单。</div>
+            </div>
+          </section>
+
+          <div class="section-label"><b>2</b><span>模型评估详情页签：展示最终模型、指标、训练测试对比和混淆矩阵</span></div>
+          <section class="panel">
+            <h3>模型评估详情 <span>集中展示训练结果，老师问机器学习时直接讲这一块</span></h3>
+            <section class="grid-3">
+              <div class="field"><label>最终采用模型</label><div>随机森林分类模型</div></div>
+              <div class="field"><label>模型用途</label><div>预测订单是否可能取消</div></div>
+              <div class="field"><label>选择原因</label><div>测试集表现更稳定，无明显过拟合</div></div>
+            </section>
+            <section class="grid-4" style="margin-top:16px">
+              <div class="metric"><div class="info">!</div><div class="tip">准确率表示模型整体预测正确的比例，适合快速判断模型大体效果。</div><div class="name">准确率</div><div class="value">86.1%</div><div class="sub">整体预测正确比例</div></div>
+              <div class="metric"><div class="info">!</div><div class="tip">精确率表示被模型判断为高风险的订单中，有多少确实可能取消，越高说明误报越少。</div><div class="name">精确率</div><div class="value">84.0%</div><div class="sub">高风险判断可信度</div></div>
+              <div class="metric"><div class="info">!</div><div class="tip">召回率表示实际会取消的订单中，模型找出来了多少，越高说明漏报越少。</div><div class="name">召回率</div><div class="value">79.0%</div><div class="sub">取消订单识别能力</div></div>
+              <div class="metric"><div class="info">!</div><div class="tip">F1 值综合考虑精确率和召回率，适合比较分类模型整体稳定性。</div><div class="name">F1 值</div><div class="value">81.0%</div><div class="sub">综合表现稳定</div></div>
+            </section>
+            <section class="grid-2" style="margin-top:16px">
+              <div>
+                <h3 style="font-size:18px">候选模型对比</h3>
+                <table>
+                  <tr><th>模型</th><th>准确率</th><th>F1 值</th><th>结论</th></tr>
+                  <tr><td>逻辑回归</td><td>78.4%</td><td>71.8%</td><td><span class="tag">基础模型</span></td></tr>
+                  <tr><td>决策树</td><td>80.2%</td><td>74.5%</td><td><span class="tag warn">易过拟合</span></td></tr>
+                  <tr><td>随机森林</td><td>86.1%</td><td>81.0%</td><td><span class="tag danger">最终采用</span></td></tr>
+                </table>
+              </div>
+              <div>
+                <h3 style="font-size:18px">训练集 / 测试集对比</h3>
+                <table>
+                  <tr><th>指标</th><th>训练集</th><th>测试集</th><th>判断</th></tr>
+                  <tr><td>准确率</td><td>88.2%</td><td>86.1%</td><td><span class="tag">差距较小</span></td></tr>
+                  <tr><td>F1 值</td><td>83.4%</td><td>81.0%</td><td><span class="tag">表现稳定</span></td></tr>
+                  <tr><td>结论</td><td colspan="2">测试集效果接近训练集</td><td><span class="tag">无明显过拟合</span></td></tr>
+                </table>
+              </div>
+            </section>
+            <section class="panel" style="margin-top:16px;min-height:220px;background:#fffaf0;">
+              <h3 style="font-size:18px">混淆矩阵 <span>看模型具体错在哪里</span></h3>
+              <div class="matrix">
+                <div class="cell head"></div><div class="cell head">预测未取消</div><div class="cell head">预测取消</div>
+                <div class="cell head">实际未取消</div><div class="cell good">预测正确<br/>12,860 条</div><div class="cell bad">误报<br/>1,140 条</div>
+                <div class="cell head">实际取消</div><div class="cell bad">漏报<br/>1,520 条</div><div class="cell good">预测正确<br/>5,690 条</div>
+              </div>
+            </section>
+          </section>
+
+          <div class="section-label"><b>3</b><span>批量预测记录页签：沿用首页当前日期时间段，最新批次在最上方</span></div>
+          <section class="panel">
+            <h3>批量预测任务记录 <span>批次时间段与首页“当前日期预订流入趋势”保持一致</span></h3>
+            <div class="record-bar"><div class="pill">当前模拟日期：2017-01-14</div><div class="pill">当前时间段：12:00-14:00</div><div class="pill">排序：最新时间段在上</div></div>
+            <table>
+              <tr><th>批次</th><th>模拟日期</th><th>时间段</th><th>来源</th><th>订单数</th><th>高风险数</th><th>平均概率</th><th>状态</th></tr>
+              <tr><td>第 3 批</td><td>2017-01-14</td><td>12:00-14:00</td><td>实时模拟</td><td>156</td><td>42</td><td>43.2%</td><td><span class="tag warn">处理中</span></td></tr>
+              <tr><td>第 2 批</td><td>2017-01-14</td><td>10:00-12:00</td><td>实时模拟</td><td>88</td><td>16</td><td>35.4%</td><td><span class="tag">已完成</span></td></tr>
+              <tr><td>第 1 批</td><td>2017-01-14</td><td>08:00-10:00</td><td>实时模拟</td><td>56</td><td>9</td><td>28.6%</td><td><span class="tag">已完成</span></td></tr>
+            </table>
+            <div class="action"><strong>说明：</strong>批量预测记录直接沿用首页当前日期趋势图的时间段口径；首页负责看整体趋势，本页只记录每个时间段批次被模型处理后的结果。</div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

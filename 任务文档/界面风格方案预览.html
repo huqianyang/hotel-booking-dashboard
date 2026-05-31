@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>界面风格方案预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { margin: 0; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: #111827; }
+    .noise { background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px); background-size: 18px 18px; }
+    .glow { box-shadow: 0 0 28px rgba(34,211,238,.25); }
+    .card-dark { background: linear-gradient(145deg, rgba(15,23,42,.96), rgba(8,47,73,.82)); border: 1px solid rgba(125,211,252,.22); }
+    .card-hotel { background: linear-gradient(145deg, #fffaf0, #f6f0df); border: 1px solid #dcc894; }
+    .card-academic { background: linear-gradient(145deg, #ffffff, #f5f7fb); border: 1px solid #d8dee9; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 noise">
+  <header class="px-10 py-8 border-b border-cyan-300/20 bg-slate-950/80">
+    <div class="flex items-end justify-between gap-6">
+      <div>
+        <p class="text-cyan-300 tracking-[0.35em] text-sm">UI STYLE OPTIONS</p>
+        <h1 class="text-4xl font-bold mt-3">酒店预订数据可视化分析与预测系统</h1>
+        <p class="text-slate-400 mt-3">界面风格方案预览：用于确认后续《界面原型设计说明书》的视觉方向</p>
+      </div>
+      <div class="text-right text-sm text-slate-400">
+        <p>Flask · PyECharts · MySQL</p>
+        <p>Flume · Kafka · Storm</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="p-8 grid grid-cols-1 xl:grid-cols-3 gap-7">
+    <section class="card-dark glow rounded-3xl p-6 overflow-hidden relative">
+      <div class="absolute -right-16 -top-16 w-48 h-48 bg-cyan-400/20 rounded-full blur-3xl"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between">
+          <span class="px-3 py-1 rounded-full bg-cyan-400/15 text-cyan-200 text-sm">A 推荐</span>
+          <span class="text-xs text-slate-400">深色科技数据大屏</span>
+        </div>
+        <h2 class="text-2xl font-bold mt-5">实时风控指挥舱</h2>
+        <p class="text-slate-300 mt-2 text-sm">深蓝黑背景、青蓝高亮、橙色风险提示，突出实时链路和风险预测。</p>
+
+        <div class="grid grid-cols-4 gap-3 mt-6">
+          <div class="rounded-2xl bg-slate-950/70 border border-cyan-300/20 p-3"><p class="text-xs text-slate-400">总预订</p><p class="text-xl font-bold text-cyan-200">119,390</p></div>
+          <div class="rounded-2xl bg-slate-950/70 border border-cyan-300/20 p-3"><p class="text-xs text-slate-400">取消率</p><p class="text-xl font-bold text-orange-300">37.04%</p></div>
+          <div class="rounded-2xl bg-slate-950/70 border border-cyan-300/20 p-3"><p class="text-xs text-slate-400">高风险</p><p class="text-xl font-bold text-red-300">86</p></div>
+          <div class="rounded-2xl bg-slate-950/70 border border-cyan-300/20 p-3"><p class="text-xs text-slate-400">链路</p><p class="text-xl font-bold text-emerald-300">运行中</p></div>
+        </div>
+
+        <div class="grid grid-cols-5 gap-3 mt-5 h-44">
+          <div class="col-span-3 rounded-2xl border border-cyan-300/20 bg-slate-950/60 p-4">
+            <p class="text-sm text-cyan-100 mb-3">月份预订与取消趋势</p>
+            <div class="h-24 flex items-end gap-2">
+              <span class="w-5 h-12 bg-cyan-400/80 rounded"></span><span class="w-5 h-20 bg-cyan-400/80 rounded"></span><span class="w-5 h-16 bg-cyan-400/80 rounded"></span><span class="w-5 h-28 bg-orange-400/80 rounded"></span><span class="w-5 h-24 bg-cyan-400/80 rounded"></span><span class="w-5 h-14 bg-orange-400/80 rounded"></span>
+            </div>
+          </div>
+          <div class="col-span-2 rounded-2xl border border-cyan-300/20 bg-slate-950/60 p-4">
+            <p class="text-sm text-cyan-100 mb-3">Flume → Kafka → Storm</p>
+            <div class="space-y-2 text-xs"><div class="p-2 rounded bg-cyan-400/15">Flume 采集日志</div><div class="p-2 rounded bg-blue-400/15">Kafka 缓冲事件</div><div class="p-2 rounded bg-orange-400/15">Storm 实时预测</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card-hotel rounded-3xl p-6 text-stone-900">
+      <div class="flex items-center justify-between">
+        <span class="px-3 py-1 rounded-full bg-amber-800 text-amber-50 text-sm">B</span>
+        <span class="text-xs text-stone-500">酒店经营管理后台</span>
+      </div>
+      <h2 class="text-2xl font-bold mt-5 text-stone-950">酒店收益分析中心</h2>
+      <p class="text-stone-600 mt-2 text-sm">浅色、金色、深绿，偏商务管理系统，表单可读性更好。</p>
+      <div class="mt-6 grid grid-cols-3 gap-3">
+        <div class="rounded-2xl bg-white/80 p-4 shadow"><p class="text-xs text-stone-500">入住趋势</p><p class="text-2xl font-bold text-emerald-800">+12%</p></div>
+        <div class="rounded-2xl bg-white/80 p-4 shadow"><p class="text-xs text-stone-500">平均房价</p><p class="text-2xl font-bold text-amber-800">101.8</p></div>
+        <div class="rounded-2xl bg-white/80 p-4 shadow"><p class="text-xs text-stone-500">取消风险</p><p class="text-2xl font-bold text-red-700">中</p></div>
+      </div>
+      <div class="mt-5 rounded-2xl bg-white/70 border border-amber-200 p-4 h-44">
+        <p class="font-semibold mb-4">预订取消预测表单</p>
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="h-8 rounded bg-stone-100 border border-stone-200"></div><div class="h-8 rounded bg-stone-100 border border-stone-200"></div>
+          <div class="h-8 rounded bg-stone-100 border border-stone-200"></div><div class="h-8 rounded bg-stone-100 border border-stone-200"></div>
+          <div class="col-span-2 h-9 rounded bg-emerald-800"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card-academic rounded-3xl p-6 text-slate-900">
+      <div class="flex items-center justify-between">
+        <span class="px-3 py-1 rounded-full bg-slate-800 text-white text-sm">C</span>
+        <span class="text-xs text-slate-500">学术报告型简洁风格</span>
+      </div>
+      <h2 class="text-2xl font-bold mt-5">实验分析平台</h2>
+      <p class="text-slate-600 mt-2 text-sm">白底蓝灰、结构规整，适合报告截图，但视觉冲击力较弱。</p>
+      <div class="mt-6 border border-slate-200 rounded-2xl p-4 bg-white">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="h-28 bg-slate-100 rounded-xl border border-slate-200"></div>
+          <div class="h-28 bg-slate-100 rounded-xl border border-slate-200"></div>
+          <div class="h-28 bg-slate-100 rounded-xl border border-slate-200"></div>
+          <div class="h-28 bg-slate-100 rounded-xl border border-slate-200"></div>
+        </div>
+      </div>
+      <p class="mt-5 text-sm text-slate-500">优点：稳妥、清晰、易实现。缺点：比较普通，不太像“实时大数据系统”。</p>
+    </section>
+  </main>
+
+  <footer class="px-10 py-6 text-slate-400 text-sm border-t border-white/10">
+    建议选择 A：深色科技数据大屏风格。它最适合实时链路、取消风险预测和 PyECharts 可视化展示。
+  </footer>
+</body>
+</html>

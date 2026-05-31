@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据查询页 UI 示例</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",sans-serif; background:#f3ead6; color:#2f2619; }
+    .page { min-height:100vh; padding:30px; background:linear-gradient(135deg,#fff8e9,#efe0bd 58%,#f8f0df); }
+    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:22px; }
+    small { color:#8a661f; letter-spacing:.28em; font-weight:700; }
+    h1 { margin:8px 0; font-size:34px; }
+    p { margin:0; color:#725f43; line-height:1.6; }
+    .shell { border:1px solid #dec995; border-radius:28px; overflow:hidden; background:#fffdf7; box-shadow:0 28px 68px rgba(94,72,36,.18); }
+    .top { height:46px; background:#fff1d2; border-bottom:1px solid #dec995; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+    .dots { display:flex; gap:8px; }
+    .dot { width:10px; height:10px; border-radius:50%; background:#c4902f; opacity:.75; }
+    .url { color:#8a6d3f; font-size:12px; }
+    .layout { display:grid; grid-template-columns:190px 1fr 360px; min-height:820px; }
+    .side { background:#efe2c3; border-right:1px solid #dec995; padding:18px 14px; display:flex; flex-direction:column; }
+    .brand { height:64px; border-radius:18px; background:linear-gradient(135deg,#1f4d3a,#bd8a2b); color:white; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; margin-bottom:18px; text-align:center; line-height:1.2; }
+    .nav { min-height:40px; border-radius:13px; background:#fff8e9; border:1px solid #e1cc98; margin-bottom:10px; display:flex; align-items:center; padding:0 14px; font-size:15px; color:#614d2f; }
+    .nav.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .side-bottom { margin-top:auto; padding-top:16px; border-top:1px solid #d8c08a; }
+    .side-bottom h4 { margin:0 0 10px; font-size:15px; color:#5b4630; }
+    .side-row { display:flex; justify-content:space-between; align-items:center; min-height:26px; font-size:13px; color:#604f37; gap:8px; }
+    .side-row i { width:8px; height:8px; border-radius:50%; background:#1f8a5b; display:inline-block; margin-right:5px; }
+    .side-row em { font-style:normal; color:#1f4d3a; font-weight:800; }
+    .btn { min-height:38px; border-radius:13px; background:#1f4d3a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; text-align:center; padding:0 14px; border:0; }
+    .btn.secondary { background:#fff8e9; color:#5b4630; border:1px solid #d8c08a; }
+    .btn.warn { background:#b45309; }
+    .btn.ghost { background:#fff; color:#1f4d3a; border:1px solid #d8c08a; }
+    .main { padding:22px; display:flex; flex-direction:column; gap:16px; }
+    .title { min-height:70px; border-radius:20px; background:#fff6e4; border:1px solid #ead7aa; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 20px; }
+    .title h2 { margin:0; font-size:26px; }
+    .title span { color:#80643b; font-size:14px; }
+    .toolbar { display:flex; gap:10px; flex-wrap:wrap; }
+    .linkage { border:1px solid #d8c08a; background:#fff8e9; border-radius:18px; padding:14px 16px; display:flex; justify-content:space-between; gap:16px; align-items:center; }
+    .linkage strong { color:#1f4d3a; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip { border:1px solid #d8c08a; border-radius:999px; padding:6px 10px; background:#fff; color:#6b4f25; font-size:13px; }
+    .filter { border:1px solid #ead7aa; background:#fff; border-radius:22px; padding:16px; }
+    .filter h3 { margin:0 0 14px; font-size:18px; color:#3d2f1f; }
+    .filter-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { color:#80643b; font-size:13px; font-weight:700; }
+    .input { min-height:40px; border:1px solid #d8c08a; background:#fffaf0; border-radius:12px; padding:0 12px; display:flex; align-items:center; color:#4c3a24; font-size:14px; }
+    .filter-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:14px; }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .kpi { min-height:96px; border-radius:20px; background:#fff; border:1px solid #ead7aa; padding:15px; }
+    .kpi small { display:block; color:#8a6d3f; font-size:13px; margin-bottom:8px; font-weight:700; }
+    .kpi strong { display:block; color:#1f4d3a; font-size:28px; }
+    .kpi em { display:block; color:#b45309; font-style:normal; font-size:13px; margin-top:5px; }
+    .table-card { border:1px solid #ead7aa; background:#fff; border-radius:22px; overflow:hidden; }
+    .table-head { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:16px 18px; border-bottom:1px solid #ead7aa; background:#fff8e9; }
+    .table-head h3 { margin:0; font-size:20px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th { background:#fff3d8; color:#6b4f25; text-align:left; padding:12px; border-bottom:1px solid #ead7aa; white-space:nowrap; }
+    td { padding:12px; border-bottom:1px solid #f1dfb6; color:#2f2619; white-space:nowrap; }
+    tr.deleted td { color:#9a8061; background:#fff8ef; text-decoration:line-through; }
+    .risk { border-radius:999px; padding:4px 10px; font-size:12px; background:#fee2e2; color:#b91c1c; }
+    .risk.mid { background:#fef3c7; color:#92400e; }
+    .risk.low { background:#dcfce7; color:#166534; }
+    .op { color:#1f4d3a; font-weight:800; margin-right:8px; }
+    .op.warn { color:#b45309; }
+    .pagination { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; color:#80643b; font-size:13px; }
+    .drawer { background:#fffaf0; border-left:1px solid #dec995; padding:20px 18px; display:flex; flex-direction:column; gap:14px; }
+    .drawer h2 { margin:0; font-size:22px; color:#3d2f1f; }
+    .drawer p { font-size:13px; }
+    .log-tabs { display:flex; gap:8px; }
+    .log-tabs span { border:1px solid #d8c08a; background:#fff; color:#6b4f25; border-radius:999px; padding:7px 10px; font-size:13px; }
+    .log-tabs span.on { background:#1f4d3a; color:#fff; border-color:#1f4d3a; }
+    .log-list { display:flex; flex-direction:column; gap:10px; overflow:auto; }
+    .log { border:1px solid #ead7aa; background:#fff; border-radius:16px; padding:12px; }
+    .log-top { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:7px; }
+    .log-type { border-radius:999px; padding:3px 8px; font-size:12px; background:#e8f5e9; color:#1f4d3a; font-weight:800; }
+    .log-type.warn { background:#fff3d8; color:#92400e; }
+    .log-type.danger { background:#fee2e2; color:#b91c1c; }
+    .log time { color:#8a6d3f; font-size:12px; }
+    .log strong { display:block; color:#3d2f1f; margin-bottom:4px; }
+    .log span { color:#725f43; font-size:13px; line-height:1.5; }
+    .drawer-note { border:1px solid #d8c08a; background:#fff8e9; border-radius:16px; padding:12px; color:#604f37; font-size:13px; line-height:1.6; }
+    @media (max-width:1400px) { .layout { grid-template-columns:180px 1fr; } .drawer { grid-column:1 / -1; border-left:0; border-top:1px solid #dec995; } .filter-grid,.kpis { grid-template-columns:repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <small>DATA QUERY PAGE MOCKUP</small>
+        <h1>数据查询页：MySQL CRUD + 首页联动 + 操作日志</h1>
+        <p>承接首页点击条件，展示 MySQL 查询、新增、修改、逻辑删除，以及应用层业务操作日志。</p>
+      </div>
+      <p>日志来源：Flask 应用层写入 operation_logs 表。</p>
+    </header>
+
+    <div class="shell">
+      <div class="top"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="url">/bookings/query?date=2017-01-14&country=Portugal&risk=high</div></div>
+      <div class="layout">
+        <aside class="side">
+          <div class="brand">酒店预订<br/>风险分析</div>
+          <div class="nav">首页总览</div>
+          <div class="nav on">数据查询</div>
+          <div class="nav">数据可视化</div>
+          <div class="nav">评估与预测</div>
+          <div class="side-bottom">
+            <h4>系统服务</h4>
+            <div class="side-row"><span><i></i><b>Web</b></span><em>运行中</em></div>
+            <div class="side-row"><span><i></i><b>MySQL</b></span><em>运行中</em></div>
+            <div class="side-row"><span><i></i><b>Redis</b></span><em>运行中</em></div>
+            <div class="side-row"><span><i></i><b>实时链路</b></span><em>运行中</em></div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="title">
+            <div>
+              <h2>预订数据查询与维护</h2>
+              <span>支持 MySQL 条件查询、新增、修改、逻辑删除；可从首页图表联动进入。</span>
+            </div>
+            <div class="toolbar">
+              <button class="btn">新增订单</button>
+              <button class="btn secondary">导出结果</button>
+              <button class="btn ghost">操作日志</button>
+            </div>
+          </div>
+
+          <section class="linkage">
+            <div>
+              <strong>来自首页联动：</strong>
+              <span>当前查看 2017-01-14，Portugal，高风险订单。</span>
+            </div>
+            <div class="chips">
+              <span class="chip">日期：2017-01-14</span>
+              <span class="chip">国家：Portugal</span>
+              <span class="chip">风险：高</span>
+              <span class="chip">来源：首页 Top 国家</span>
+            </div>
+          </section>
+
+          <section class="filter">
+            <h3>筛选条件</h3>
+            <div class="filter-grid">
+              <div class="field"><label>日期范围</label><div class="input">2017-01-14 至 2017-01-14</div></div>
+              <div class="field"><label>酒店类型</label><div class="input">全部 / City Hotel / Resort Hotel</div></div>
+              <div class="field"><label>国家</label><div class="input">Portugal</div></div>
+              <div class="field"><label>市场渠道</label><div class="input">全部渠道</div></div>
+              <div class="field"><label>客户类型</label><div class="input">Transient / Group / Contract</div></div>
+              <div class="field"><label>风险等级</label><div class="input">高风险</div></div>
+              <div class="field"><label>是否取消</label><div class="input">全部 / 已取消 / 未取消</div></div>
+              <div class="field"><label>删除状态</label><div class="input">正常记录</div></div>
+            </div>
+            <div class="filter-actions"><button class="btn secondary">重置条件</button><button class="btn">查询 MySQL</button></div>
+          </section>
+
+          <section class="kpis">
+            <div class="kpi"><small>当前结果数</small><strong>86</strong><em>符合筛选条件</em></div>
+            <div class="kpi"><small>筛选取消率</small><strong>56.6%</strong><em>Portugal 高风险</em></div>
+            <div class="kpi"><small>高风险订单数</small><strong>42</strong><em>预测概率 ≥ 70%</em></div>
+            <div class="kpi"><small>平均取消概率</small><strong>73.8%</strong><em>当前筛选结果</em></div>
+          </section>
+
+          <section class="table-card">
+            <div class="table-head">
+              <h3>MySQL 预订记录</h3>
+              <div class="toolbar"><button class="btn secondary">批量标记</button><button class="btn ghost">刷新表格</button></div>
+            </div>
+            <table>
+              <tr><th>订单 ID</th><th>酒店类型</th><th>国家</th><th>渠道</th><th>客户类型</th><th>ADR</th><th>取消概率</th><th>风险</th><th>是否取消</th><th>操作</th></tr>
+              <tr><td>BK80242</td><td>City Hotel</td><td>Portugal</td><td>Online TA</td><td>Transient</td><td>118.5</td><td>82%</td><td><span class="risk">高</span></td><td>未知</td><td><span class="op">编辑</span><span class="op warn">逻辑删除</span></td></tr>
+              <tr><td>BK80243</td><td>Resort Hotel</td><td>Portugal</td><td>Groups</td><td>Group</td><td>91.2</td><td>76%</td><td><span class="risk">高</span></td><td>未知</td><td><span class="op">编辑</span><span class="op warn">逻辑删除</span></td></tr>
+              <tr><td>BK80244</td><td>City Hotel</td><td>Portugal</td><td>Direct</td><td>Transient</td><td>104.0</td><td>61%</td><td><span class="risk mid">中</span></td><td>未知</td><td><span class="op">编辑</span><span class="op warn">逻辑删除</span></td></tr>
+              <tr class="deleted"><td>BK80118</td><td>City Hotel</td><td>Portugal</td><td>Online TA</td><td>Transient</td><td>88.0</td><td>71%</td><td><span class="risk">高</span></td><td>未知</td><td><span class="op">恢复</span></td></tr>
+            </table>
+            <div class="pagination"><span>第 1 页 / 共 9 页，每页 10 条</span><span>上一页　1　2　3　下一页</span></div>
+          </section>
+        </main>
+
+        <aside class="drawer">
+          <h2>操作日志</h2>
+          <p>应用层业务日志，记录用户 CRUD 操作和系统实时写入。</p>
+          <div class="log-tabs"><span class="on">全部</span><span>用户操作</span><span>系统写入</span></div>
+          <div class="log-list">
+            <div class="log"><div class="log-top"><span class="log-type">查询</span><time>10:21:33</time></div><strong>查询 hotel_bookings</strong><span>条件：日期=2017-01-14，国家=Portugal，风险=高。</span></div>
+            <div class="log"><div class="log-top"><span class="log-type">新增</span><time>10:22:10</time></div><strong>新增订单 BK90021</strong><span>用户手动新增一条预订记录，写入 MySQL。</span></div>
+            <div class="log"><div class="log-top"><span class="log-type warn">修改</span><time>10:23:02</time></div><strong>修改订单 BK80242</strong><span>修改 ADR：101.8 → 118.5；渠道：Direct → Online TA。</span></div>
+            <div class="log"><div class="log-top"><span class="log-type danger">逻辑删除</span><time>10:24:18</time></div><strong>逻辑删除 BK80118</strong><span>设置 is_deleted = 1，原始记录保留。</span></div>
+            <div class="log"><div class="log-top"><span class="log-type">实时写入</span><time>10:25:40</time></div><strong>Storm 写入预测结果</strong><span>订单 BK80243，取消概率 76%，风险等级高。</span></div>
+          </div>
+          <div class="drawer-note">说明：这里不是直接读取 MySQL binlog，而是 Flask 应用在查询、新增、修改、删除和实时写入时主动记录。</div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

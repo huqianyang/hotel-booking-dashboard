@@ -1,0 +1,9 @@
+Flask==3.1.2
+pytest==9.0.2
+python-dotenv==1.2.1
+pandas==2.3.3
+numpy==2.3.5
+scikit-learn==1.7.2
+pyecharts==2.0.9
+PyMySQL==1.1.2
+redis==7.1.0
