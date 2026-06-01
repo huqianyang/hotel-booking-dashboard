@@ -1,0 +1,354 @@
+import csv
+from pathlib import Path
+
+from app import create_app
+from app.data.cleaning import CLEANED_BOOKING_COLUMNS
+
+
+def _write_bookings_csv(path: Path):
+    rows = [
+        {
+            "booking_id": 1,
+            "hotel": "City Hotel",
+            "hotel_name": "City Hotel",
+            "is_canceled": 1,
+            "is_canceled_label": "Canceled",
+            "lead_time": 120,
+            "arrival_date": "2017-01-14",
+            "event_date": "2017-01-14",
+            "stays_in_weekend_nights": 1,
+            "stays_in_week_nights": 2,
+            "total_nights": 3,
+            "adults": 2,
+            "children": 0,
+            "babies": 0,
+            "total_guests": 2,
+            "meal": "BB",
+            "meal_name": "Breakfast",
+            "country_code": "PRT",
+            "country_name": "Portugal",
+            "market_segment": "Online TA",
+            "market_segment_name": "Online Travel Agent",
+            "distribution_channel": "TA/TO",
+            "is_repeated_guest": 0,
+            "is_repeated_guest_label": "New Guest",
+            "previous_cancellations": 1,
+            "previous_bookings_not_canceled": 0,
+            "reserved_room_type": "A",
+            "assigned_room_type": "A",
+            "room_type_changed": 0,
+            "booking_changes": 0,
+            "deposit_type": "No Deposit",
+            "deposit_type_name": "No Deposit",
+            "days_in_waiting_list": 0,
+            "customer_type": "Transient",
+            "customer_type_name": "Transient",
+            "adr": 100.5,
+            "required_car_parking_spaces": 0,
+            "total_of_special_requests": 0,
+            "reservation_status": "Canceled",
+            "reservation_status_date": "2017-01-10",
+            "is_deleted": 0,
+        },
+        {
+            "booking_id": 2,
+            "hotel": "Resort Hotel",
+            "hotel_name": "Resort Hotel",
+            "is_canceled": 0,
+            "is_canceled_label": "Not Canceled",
+            "lead_time": 10,
+            "arrival_date": "2017-02-01",
+            "event_date": "2017-02-01",
+            "stays_in_weekend_nights": 0,
+            "stays_in_week_nights": 1,
+            "total_nights": 1,
+            "adults": 1,
+            "children": 1,
+            "babies": 0,
+            "total_guests": 2,
+            "meal": "HB",
+            "meal_name": "Half Board",
+            "country_code": "GBR",
+            "country_name": "United Kingdom",
+            "market_segment": "Direct",
+            "market_segment_name": "Direct",
+            "distribution_channel": "Direct",
+            "is_repeated_guest": 1,
+            "is_repeated_guest_label": "Repeated Guest",
+            "previous_cancellations": 0,
+            "previous_bookings_not_canceled": 2,
+            "reserved_room_type": "B",
+            "assigned_room_type": "C",
+            "room_type_changed": 1,
+            "booking_changes": 1,
+            "deposit_type": "Refundable",
+            "deposit_type_name": "Refundable",
+            "days_in_waiting_list": 0,
+            "customer_type": "Contract",
+            "customer_type_name": "Contract",
+            "adr": 80,
+            "required_car_parking_spaces": 1,
+            "total_of_special_requests": 2,
+            "reservation_status": "Check-Out",
+            "reservation_status_date": "2017-02-02",
+            "is_deleted": 0,
+        },
+        {
+            "booking_id": 3,
+            "hotel": "City Hotel",
+            "hotel_name": "City Hotel",
+            "is_canceled": 0,
+            "is_canceled_label": "Not Canceled",
+            "lead_time": 5,
+            "arrival_date": "2017-02-10",
+            "event_date": "2017-02-10",
+            "stays_in_weekend_nights": 0,
+            "stays_in_week_nights": 1,
+            "total_nights": 1,
+            "adults": 1,
+            "children": 0,
+            "babies": 0,
+            "total_guests": 1,
+            "meal": "SC",
+            "meal_name": "Self Catering",
+            "country_code": "PRT",
+            "country_name": "Portugal",
+            "market_segment": "Online TA",
+            "market_segment_name": "Online Travel Agent",
+            "distribution_channel": "TA/TO",
+            "is_repeated_guest": 0,
+            "is_repeated_guest_label": "New Guest",
+            "previous_cancellations": 0,
+            "previous_bookings_not_canceled": 0,
+            "reserved_room_type": "A",
+            "assigned_room_type": "A",
+            "room_type_changed": 0,
+            "booking_changes": 0,
+            "deposit_type": "No Deposit",
+            "deposit_type_name": "No Deposit",
+            "days_in_waiting_list": 0,
+            "customer_type": "Transient",
+            "customer_type_name": "Transient",
+            "adr": 50,
+            "required_car_parking_spaces": 0,
+            "total_of_special_requests": 1,
+            "reservation_status": "Check-Out",
+            "reservation_status_date": "2017-02-11",
+            "is_deleted": 1,
+        },
+    ]
+    with path.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=CLEANED_BOOKING_COLUMNS)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _client(tmp_path):
+    csv_path = tmp_path / "bookings.csv"
+    _write_bookings_csv(csv_path)
+    app = create_app({"TESTING": True, "BOOKING_DATA_CSV": str(csv_path)})
+    return app.test_client()
+
+
+def test_filter_options_return_contract_shape(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/bookings/filter-options")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert set(payload["data"]) == {
+        "hotels",
+        "countries",
+        "market_segments",
+        "customer_types",
+        "cancel_statuses",
+    }
+    assert {"value": "City Hotel", "label": "City Hotel"} in payload["data"]["hotels"]
+    assert {"value": 1, "label": "Canceled"} in payload["data"]["cancel_statuses"]
+
+
+def test_bookings_list_filters_paginates_and_excludes_deleted_rows(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/bookings?hotel=City%20Hotel&page=1&page_size=5")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["pagination"] == {
+        "page": 1,
+        "page_size": 5,
+        "total": 1,
+        "total_pages": 1,
+    }
+    assert payload["data"]["items"][0]["booking_id"] == 1
+    assert "is_deleted" not in payload["data"]["items"][0]
+
+
+def test_dashboard_summary_aggregates_active_bookings(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/dashboard/summary")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["total_bookings"] == 2
+    assert payload["data"]["canceled_bookings"] == 1
+    assert payload["data"]["cancel_rate"] == 0.5
+    assert payload["data"]["avg_adr"] == 90.25
+    assert payload["data"]["latest_event_time"] == "2017-02-01 00:00:00"
+
+
+def test_visualization_overview_returns_contract_sections(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/visualization/overview?country_code=PRT")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["filters"]["country_code"] == "PRT"
+    assert payload["data"]["summary"]["booking_count"] == 1
+    assert set(payload["data"]) == {
+        "filters",
+        "summary",
+        "trend",
+        "cancel_structure",
+        "factor_bars",
+        "channel_ranking",
+        "country_map",
+        "risk_tags",
+        "sample_orders",
+    }
+
+
+def test_prediction_stub_returns_contract_result(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.post("/api/prediction/single", json={"booking_id": 1})
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["booking_id"] == 1
+    assert payload["data"]["model_version"] == "stub_v1"
+    assert 0 <= payload["data"]["cancel_probability"] <= 1
+    assert payload["data"]["risk_level"] in {"low", "medium", "high"}
+    assert payload["data"]["reason_tags"]
+
+
+def test_booking_detail_returns_contract_fields(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/bookings/1")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["booking_id"] == 1
+    assert payload["data"]["meal_name"] == "Breakfast"
+    assert payload["data"]["reservation_status_date"] == "2017-01-10"
+
+
+def test_booking_update_allows_only_demo_fields(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.put(
+        "/api/bookings/1",
+        json={
+            "customer_type": "Contract",
+            "market_segment": "Direct",
+            "deposit_type": "Refundable",
+            "adr": 120.5,
+            "total_of_special_requests": 1,
+            "is_canceled": 0,
+        },
+    )
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload == {
+        "success": True,
+        "data": {"booking_id": 1, "updated": True},
+        "message": "booking updated",
+    }
+
+
+def test_booking_delete_marks_logical_delete(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.delete("/api/bookings/1")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload == {
+        "success": True,
+        "data": {"booking_id": 1, "is_deleted": 1},
+        "message": "booking deleted",
+    }
+
+
+def test_realtime_summary_stub_returns_service_status(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/realtime/summary")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["processed_count"] == 2
+    assert payload["data"]["latest_business_time"] == "2017-02-01 00:00:00"
+    assert payload["data"]["latest_cancel_rate"] == 0.5
+    assert payload["data"]["latest_high_risk_count"] == 1
+    assert payload["data"]["service_status"] == {
+        "mysql": "running",
+        "redis": "stub",
+        "flume": "pending",
+        "kafka": "pending",
+        "storm": "pending",
+    }
+
+
+def test_realtime_trend_stub_returns_points(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/realtime/trend")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["points"] == [
+        {
+            "business_time": "2017-01-14 00:00:00",
+            "processed_count": 1,
+            "cancel_rate": 1.0,
+            "high_risk_count": 1,
+        },
+        {
+            "business_time": "2017-02-01 00:00:00",
+            "processed_count": 1,
+            "cancel_rate": 0.0,
+            "high_risk_count": 0,
+        },
+    ]
+
+
+def test_realtime_recent_predictions_stub_returns_contract_items(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/realtime/recent-predictions")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["items"][0] == {
+        "booking_id": 1,
+        "hotel_name": "City Hotel",
+        "country_name": "Portugal",
+        "cancel_probability": 0.85,
+        "risk_level_name": "high_risk",
+        "business_time": "2017-01-14 00:00:00",
+    }
