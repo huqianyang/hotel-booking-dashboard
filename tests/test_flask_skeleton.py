@@ -28,6 +28,42 @@ def test_homepage_renders_course_project_navigation():
     assert "评估与预测" in html
 
 
+def test_main_frontend_pages_render_static_mock_workspaces():
+    app = create_app({"TESTING": True})
+    client = app.test_client()
+
+    expected_pages = {
+        "/": ["当前日期风险态势", "latest_event_time", "static/js/dashboard.js"],
+        "/bookings": ["预订数据查询与维护", "booking_id", "static/js/bookings.js"],
+        "/visualization": ["取消率预测可视化分析", "country_code", "static/js/visualization.js"],
+        "/prediction": ["模型评估与订单预测", "cancel_probability", "static/js/prediction.js"],
+    }
+
+    for path, expected_texts in expected_pages.items():
+        response = client.get(path)
+
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        for expected_text in expected_texts:
+            assert expected_text in html
+
+
+def test_frontend_static_assets_exist():
+    expected_files = [
+        "app/templates/base.html",
+        "app/templates/bookings.html",
+        "app/templates/visualization.html",
+        "app/templates/prediction.html",
+        "app/static/js/dashboard.js",
+        "app/static/js/bookings.js",
+        "app/static/js/visualization.js",
+        "app/static/js/prediction.js",
+    ]
+
+    for relative_path in expected_files:
+        assert (BASE_DIR / relative_path).exists(), f"Missing {relative_path}"
+
+
 def test_health_endpoint_reports_application_status():
     app = create_app({"TESTING": True})
     client = app.test_client()

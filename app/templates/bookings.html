@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% set active_page = "bookings" %}
+{% block title %}数据查询 - 酒店预订数据可视化分析与预测系统{% endblock %}
+{% block eyebrow %}DATA QUERY{% endblock %}
+{% block page_heading %}预订数据查询与维护{% endblock %}
+{% block page_subtitle %}按契约字段筛选 hotel_bookings mock 数据，展示表格、分页、详情和演示编辑。{% endblock %}
+{% block title_actions %}<button class="primary-action" type="button" id="export-bookings">导出结果</button>{% endblock %}
+{% block content %}
+<section class="link-strip">
+  <strong>来自首页联动：</strong>
+  <span id="linkage-copy">当前查看全部订单，可通过筛选条件缩小范围。</span>
+  <button type="button" id="clear-linkage">清除筛选</button>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h3>筛选条件</h3><span>字段沿用接口契约：hotel、country_code、market_segment、customer_type、is_canceled、keyword</span></div>
+  <form class="filter-grid" id="booking-filters">
+    <label>酒店类型<select name="hotel"><option value="">全部</option><option>City Hotel</option><option>Resort Hotel</option></select></label>
+    <label>国家/地区<select name="country_code"><option value="">全部</option><option value="PRT">葡萄牙</option><option value="GBR">英国</option><option value="FRA">法国</option></select></label>
+    <label>市场渠道<select name="market_segment"><option value="">全部</option><option>Online TA</option><option>Direct</option><option>Groups</option></select></label>
+    <label>客户类型<select name="customer_type"><option value="">全部</option><option>Transient</option><option>Group</option><option>Contract</option></select></label>
+    <label>是否取消<select name="is_canceled"><option value="">全部</option><option value="0">未取消</option><option value="1">已取消</option></select></label>
+    <label>关键词<input name="keyword" placeholder="booking_id / country_name"></label>
+    <div class="filter-actions"><button type="reset">重置</button><button type="submit">查询 MySQL</button></div>
+  </form>
+</section>
+
+<section class="metric-grid small" id="booking-stats"></section>
+
+<section class="content-grid query-layout">
+  <article class="panel table-panel">
+    <div class="panel-head"><h3>MySQL 预订记录</h3><span id="booking-count"></span></div>
+    <table>
+      <thead><tr><th>订单编号</th><th>酒店类型</th><th>国家</th><th>渠道</th><th>客户类型</th><th>提前天数</th><th>ADR</th><th>是否取消</th><th>操作</th></tr></thead>
+      <tbody id="booking-table"></tbody>
+    </table>
+    <div class="pagination"><button id="prev-page" type="button">上一页</button><span id="page-copy"></span><button id="next-page" type="button">下一页</button></div>
+  </article>
+  <aside class="panel detail-panel">
+    <div class="panel-head"><h3>订单详情</h3><span data-field="booking_id">booking_id</span></div>
+    <div id="booking-detail" class="detail-list"></div>
+    <div class="operation-log" id="operation-log"></div>
+  </aside>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/bookings.js') }}"></script>{% endblock %}

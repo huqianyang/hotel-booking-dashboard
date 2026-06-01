@@ -11,6 +11,18 @@ def create_app(test_config=None):
     def index():
         return render_template("index.html")
 
+    @app.get("/bookings")
+    def bookings():
+        return render_template("bookings.html")
+
+    @app.get("/visualization")
+    def visualization():
+        return render_template("visualization.html")
+
+    @app.get("/prediction")
+    def prediction():
+        return render_template("prediction.html")
+
     @app.get("/health")
     def health():
         return jsonify({"status": "ok", "service": "hotel-booking-dashboard"})
