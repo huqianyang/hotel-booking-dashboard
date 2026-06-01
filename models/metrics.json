@@ -1,0 +1,61 @@
+{
+  "selected_model": "random_forest",
+  "model_version": "random_forest_v1",
+  "metrics": {
+    "accuracy": 0.8707,
+    "precision_score": 0.8249,
+    "recall_score": 0.8263,
+    "f1_score": 0.8256,
+    "train_score": 0.9113,
+    "test_score": 0.8707
+  },
+  "comparison": {
+    "logistic_regression": {
+      "accuracy": 0.8115,
+      "precision_score": 0.7256,
+      "recall_score": 0.7898,
+      "f1_score": 0.7563,
+      "train_score": 0.8126,
+      "test_score": 0.8115,
+      "confusion_matrix": [
+        [
+          12391,
+          2642
+        ],
+        [
+          1859,
+          6986
+        ]
+      ]
+    },
+    "random_forest": {
+      "accuracy": 0.8707,
+      "precision_score": 0.8249,
+      "recall_score": 0.8263,
+      "f1_score": 0.8256,
+      "train_score": 0.9113,
+      "test_score": 0.8707,
+      "confusion_matrix": [
+        [
+          13482,
+          1551
+        ],
+        [
+          1536,
+          7309
+        ]
+      ]
+    }
+  },
+  "confusion_matrix": [
+    [
+      13482,
+      1551
+    ],
+    [
+      1536,
+      7309
+    ]
+  ],
+  "feature_count": 24
+}
