@@ -1,4 +1,6 @@
 import csv
+import json
+import pickle
 from pathlib import Path
 
 from app import create_app
@@ -146,7 +148,121 @@ def _write_bookings_csv(path: Path):
 def _client(tmp_path):
     csv_path = tmp_path / "bookings.csv"
     _write_bookings_csv(csv_path)
-    app = create_app({"TESTING": True, "BOOKING_DATA_CSV": str(csv_path)})
+    app = create_app({"TESTING": True, "BOOKING_DATA_SOURCE": "csv", "BOOKING_DATA_CSV": str(csv_path), "REDIS_ENABLED": False})
+    return app.test_client()
+
+
+class FakeCancellationModel:
+    def __init__(self, probability):
+        self.probability = probability
+
+    def predict_proba(self, frame):
+        assert list(frame.columns) == [
+            "hotel",
+            "lead_time",
+            "total_nights",
+            "adults",
+            "children",
+            "babies",
+            "total_guests",
+            "meal",
+            "country_code",
+            "market_segment",
+            "distribution_channel",
+            "is_repeated_guest",
+            "previous_cancellations",
+            "previous_bookings_not_canceled",
+            "reserved_room_type",
+            "assigned_room_type",
+            "room_type_changed",
+            "booking_changes",
+            "deposit_type",
+            "days_in_waiting_list",
+            "customer_type",
+            "adr",
+            "required_car_parking_spaces",
+            "total_of_special_requests",
+        ]
+        return [[1 - self.probability, self.probability]]
+
+
+def _write_model_artifacts(model_dir: Path, probability=0.72):
+    model_dir.mkdir()
+    (model_dir / "feature_columns.json").write_text(
+        json.dumps(
+            [
+                "hotel",
+                "lead_time",
+                "total_nights",
+                "adults",
+                "children",
+                "babies",
+                "total_guests",
+                "meal",
+                "country_code",
+                "market_segment",
+                "distribution_channel",
+                "is_repeated_guest",
+                "previous_cancellations",
+                "previous_bookings_not_canceled",
+                "reserved_room_type",
+                "assigned_room_type",
+                "room_type_changed",
+                "booking_changes",
+                "deposit_type",
+                "days_in_waiting_list",
+                "customer_type",
+                "adr",
+                "required_car_parking_spaces",
+                "total_of_special_requests",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (model_dir / "metrics.json").write_text(
+        json.dumps(
+            {
+                "selected_model": "random_forest",
+                "model_version": "random_forest_v1",
+                "metrics": {
+                    "accuracy": 0.87,
+                    "precision_score": 0.82,
+                    "recall_score": 0.83,
+                    "f1_score": 0.825,
+                    "train_score": 0.91,
+                    "test_score": 0.87,
+                },
+                "comparison": {
+                    "random_forest": {
+                        "accuracy": 0.87,
+                        "precision_score": 0.82,
+                        "recall_score": 0.83,
+                        "f1_score": 0.825,
+                    }
+                },
+                "confusion_matrix": [[13482, 1551], [1536, 7309]],
+            }
+        ),
+        encoding="utf-8",
+    )
+    with (model_dir / "cancellation_model.pkl").open("wb") as model_file:
+        pickle.dump(FakeCancellationModel(probability), model_file)
+
+
+def _client_with_model(tmp_path, probability=0.72):
+    csv_path = tmp_path / "bookings.csv"
+    model_dir = tmp_path / "models"
+    _write_bookings_csv(csv_path)
+    _write_model_artifacts(model_dir, probability)
+    app = create_app(
+        {
+            "TESTING": True,
+            "BOOKING_DATA_SOURCE": "csv",
+            "BOOKING_DATA_CSV": str(csv_path),
+            "REDIS_ENABLED": False,
+            "PREDICTION_MODEL_DIR": str(model_dir),
+        }
+    )
     return app.test_client()
 
 
@@ -225,8 +341,8 @@ def test_visualization_overview_returns_contract_sections(tmp_path):
     }
 
 
-def test_prediction_stub_returns_contract_result(tmp_path):
-    client = _client(tmp_path)
+def test_prediction_single_uses_real_model_artifact_and_keeps_contract(tmp_path):
+    client = _client_with_model(tmp_path, probability=0.72)
 
     response = client.post("/api/prediction/single", json={"booking_id": 1})
 
@@ -234,10 +350,44 @@ def test_prediction_stub_returns_contract_result(tmp_path):
     assert response.status_code == 200
     assert payload["success"] is True
     assert payload["data"]["booking_id"] == 1
-    assert payload["data"]["model_version"] == "stub_v1"
-    assert 0 <= payload["data"]["cancel_probability"] <= 1
-    assert payload["data"]["risk_level"] in {"low", "medium", "high"}
-    assert payload["data"]["reason_tags"]
+    assert payload["data"]["model_version"] == "random_forest_v1"
+    assert payload["data"]["cancel_probability"] == 0.72
+    assert payload["data"]["predicted_label"] == 1
+    assert payload["data"]["risk_level"] == "high"
+    assert payload["data"]["risk_level_name"] == "high_risk"
+    assert "lead_time_high" in payload["data"]["reason_tags"]
+
+
+def test_model_metrics_reads_training_artifact_and_formats_frontend_contract(tmp_path):
+    client = _client_with_model(tmp_path)
+
+    response = client.get("/api/prediction/model-metrics")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"]["selected_model"] == {
+        "model_name": "random_forest",
+        "model_version": "random_forest_v1",
+        "is_selected": 1,
+        "reason": "selected by training pipeline",
+    }
+    assert payload["data"]["metrics"]["f1_score"] == 0.825
+    assert payload["data"]["model_comparison"] == [
+        {
+            "model_name": "random_forest",
+            "accuracy": 0.87,
+            "precision_score": 0.82,
+            "recall_score": 0.83,
+            "f1_score": 0.825,
+        }
+    ]
+    assert payload["data"]["confusion_matrix"] == {
+        "true_negative": 13482,
+        "false_positive": 1551,
+        "false_negative": 1536,
+        "true_positive": 7309,
+    }
 
 
 def test_booking_detail_returns_contract_fields(tmp_path):

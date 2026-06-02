@@ -13,6 +13,7 @@ from app.services.booking_repository import (
     MySQLBookingRepository,
     option_pairs,
 )
+from app.services.prediction_service import PredictionService
 from app.services.realtime_service import RealtimeService
 
 
@@ -141,24 +142,12 @@ def register_api_routes(app):
         booking = _repository().get_booking(booking_id)
         if not booking:
             return _fail("booking not found", 404)
-        probability = _stub_probability(booking)
-        risk_level, risk_level_name = _risk_level(probability)
-        data = {
-            "booking_id": int(booking_id),
-            "model_version": "stub_v1",
-            "cancel_probability": probability,
-            "predicted_label": 1 if probability >= 0.5 else 0,
-            "predicted_label_name": "may_cancel" if probability >= 0.5 else "likely_keep",
-            "risk_level": risk_level,
-            "risk_level_name": risk_level_name,
-            "reason_tags": _reason_tags(booking),
-            "predicted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        }
+        data = _prediction_service().predict_booking(booking)
         return _ok(data, "prediction completed")
 
     @app.get("/api/prediction/model-metrics")
     def model_metrics():
-        return _ok(_stub_model_metrics())
+        return _ok(_prediction_service().model_metrics())
 
     @app.get("/api/prediction/batch-records")
     def batch_records():
@@ -217,6 +206,15 @@ def _realtime_service():
     if current_app.config.get("REDIS_ENABLED"):
         redis_client = RedisClient.from_flask_config(current_app.config)
     return RealtimeService(_repository(), redis_client)
+
+
+def _prediction_service():
+    return PredictionService(
+        model_dir=current_app.config.get("PREDICTION_MODEL_DIR"),
+        model_path=current_app.config.get("PREDICTION_MODEL_PATH"),
+        feature_columns_path=current_app.config.get("PREDICTION_FEATURE_COLUMNS_PATH"),
+        metrics_path=current_app.config.get("PREDICTION_METRICS_PATH"),
+    )
 
 
 def _booking_filters():

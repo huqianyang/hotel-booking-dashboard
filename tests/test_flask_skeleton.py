@@ -13,6 +13,34 @@ def test_app_factory_configures_testing_client():
     assert app.name == "app"
 
 
+def test_app_factory_reads_backend_environment_switches(monkeypatch):
+    monkeypatch.setenv("BOOKING_DATA_SOURCE", "mysql")
+    monkeypatch.setenv("MYSQL_HOST", "db.local")
+    monkeypatch.setenv("MYSQL_PORT", "3307")
+    monkeypatch.setenv("MYSQL_USER", "hotel")
+    monkeypatch.setenv("MYSQL_PASSWORD", "secret")
+    monkeypatch.setenv("MYSQL_DATABASE", "hotel_booking_analysis")
+    monkeypatch.setenv("REDIS_ENABLED", "true")
+    monkeypatch.setenv("REDIS_HOST", "redis.local")
+    monkeypatch.setenv("REDIS_PORT", "6380")
+    monkeypatch.setenv("REDIS_DB", "2")
+    monkeypatch.setenv("PREDICTION_MODEL_DIR", "custom-models")
+
+    app = create_app({"TESTING": True})
+
+    assert app.config["BOOKING_DATA_SOURCE"] == "mysql"
+    assert app.config["MYSQL_HOST"] == "db.local"
+    assert app.config["MYSQL_PORT"] == 3307
+    assert app.config["MYSQL_USER"] == "hotel"
+    assert app.config["MYSQL_PASSWORD"] == "secret"
+    assert app.config["MYSQL_DATABASE"] == "hotel_booking_analysis"
+    assert app.config["REDIS_ENABLED"] is True
+    assert app.config["REDIS_HOST"] == "redis.local"
+    assert app.config["REDIS_PORT"] == 6380
+    assert app.config["REDIS_DB"] == 2
+    assert app.config["PREDICTION_MODEL_DIR"] == "custom-models"
+
+
 def test_homepage_renders_course_project_navigation():
     app = create_app({"TESTING": True})
     client = app.test_client()

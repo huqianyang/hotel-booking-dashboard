@@ -1,4 +1,6 @@
 from contextlib import contextmanager
+from datetime import date
+from decimal import Decimal
 
 from app.database.mysql import MySQLConfig
 from app.services.booking_repository import MySQLBookingRepository
@@ -90,6 +92,40 @@ def test_mysql_repository_filters_paginates_and_excludes_deleted_rows():
     assert list_params == ("City Hotel", "PRT", 5, 0)
     assert result["pagination"]["total"] == 1
     assert result["items"][0]["booking_id"] == 1
+
+
+def test_mysql_repository_serializes_date_and_decimal_values_for_api_contract():
+    client = FakeClient(
+        [
+            [{"total": 1}],
+            [
+                {
+                    "booking_id": 1,
+                    "hotel": "City Hotel",
+                    "hotel_name": "City Hotel",
+                    "is_canceled": 0,
+                    "is_canceled_label": "Not Canceled",
+                    "arrival_date": date(2017, 1, 14),
+                    "country_code": "PRT",
+                    "country_name": "Portugal",
+                    "market_segment": "Online TA",
+                    "market_segment_name": "Online Travel Agent",
+                    "customer_type": "Transient",
+                    "customer_type_name": "Transient",
+                    "lead_time": 120,
+                    "total_guests": 2,
+                    "total_nights": 3,
+                    "adr": Decimal("100.50"),
+                }
+            ],
+        ]
+    )
+    repository = MySQLBookingRepository(client)
+
+    result = repository.paginated_bookings({}, page=1, page_size=5)
+
+    assert result["items"][0]["arrival_date"] == "2017-01-14"
+    assert result["items"][0]["adr"] == 100.5
 
 
 def test_mysql_repository_updates_only_allowed_fields_and_logically_deletes():
