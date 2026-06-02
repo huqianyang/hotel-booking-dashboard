@@ -230,19 +230,12 @@ button { cursor: pointer; }
   background: var(--danger);
   box-shadow: 0 0 0 4px rgba(185,28,28,.13);
 }
-.bar-label {
-  margin: 0 auto;
-  color: #7b6036;
-  font-size: 11px;
-  line-height: 1.1;
-  white-space: nowrap;
-  writing-mode: vertical-rl;
-}
+.bar-label { font-size: 12px; color: #7b6036; white-space: nowrap; }
 
 .rank-list { display: grid; gap: 11px; }
 .rank-row {
   display: grid;
-  grid-template-columns: minmax(140px, 190px) minmax(0, 1fr) 70px;
+  grid-template-columns: 112px minmax(0, 1fr) 70px;
   align-items: center;
   gap: 10px;
   color: #604f37;
@@ -254,7 +247,6 @@ button { cursor: pointer; }
   color: var(--green);
   text-align: left;
   font-weight: 800;
-  overflow-wrap: anywhere;
 }
 .track { height: 23px; overflow: hidden; border: 1px solid #dfc88c; border-radius: 999px; background: #fff8e9; }
 .track b { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--green), #75ba8d); }

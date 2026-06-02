@@ -22,7 +22,7 @@
       <section class="side-status">
         <h2>{% block sidebar_title %}系统服务{% endblock %}</h2>
         <div class="status-row"><span>Web</span><b>运行中</b></div>
-        <div class="status-row"><span>MySQL</span><b>可选</b></div>
+        <div class="status-row"><span>MySQL</span><b>就绪</b></div>
         <div class="status-row"><span>Redis</span><b>模拟</b></div>
         <div class="status-row"><span>实时链路</span><b>占位</b></div>
         {% block sidebar_extra %}{% endblock %}
@@ -34,7 +34,7 @@
         <div>
           <p class="eyebrow">{% block eyebrow %}HOTEL BOOKING DASHBOARD{% endblock %}</p>
           <h1>{% block page_heading %}酒店预订风险分析{% endblock %}</h1>
-          <p>{% block page_subtitle %}围绕酒店预订数据，展示查询、可视化分析、取消风险预测和实时处理状态。{% endblock %}</p>
+          <p>{% block page_subtitle %}使用契约字段与 mock 数据先完成页面展示，后续切换真实 API。{% endblock %}</p>
         </div>
         {% block title_actions %}{% endblock %}
       </header>

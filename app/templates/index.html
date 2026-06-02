@@ -2,30 +2,27 @@
 {% set active_page = "dashboard" %}
 {% block title %}首页 - 酒店预订数据可视化分析与预测系统{% endblock %}
 {% block page_heading %}酒店预订风险分析首页{% endblock %}
-{% block page_subtitle %}汇总当前数据规模、取消风险趋势、渠道风险和最新实时预测记录。{% endblock %}
-{% block title_actions %}<span class="run-badge" id="latest-event-time" data-field="latest_event_time">加载中</span>{% endblock %}
+{% block page_subtitle %}当前日期风险态势、模拟订单处理进度、服务状态和最新高风险预测集中展示。{% endblock %}
+{% block title_actions %}<span class="run-badge" id="latest-event-time" data-field="latest_event_time">2017-01-14 14:00:00</span>{% endblock %}
 {% block sidebar_extra %}
   <div class="side-divider"></div>
   <div class="status-row"><span>订单模拟</span><b id="simulation-status">运行中</b></div>
-  <div class="status-row"><span>数据日期</span><b id="sidebar-latest-date">加载中</b></div>
-  <button class="side-button" id="toggle-simulation" type="button">暂停模拟</button>
+  <div class="status-row"><span>当前日期</span><b>2017-01-14</b></div>
+  <button class="side-button" id="toggle-simulation" type="button">停止模拟</button>
 {% endblock %}
 {% block content %}
 <section class="metric-grid" id="dashboard-summary" aria-label="首页核心指标"></section>
 
 <section class="section-heading">
   <h2>当前日期风险态势</h2>
-  <p>点击趋势柱、渠道或国家排行，可跳转到数据查询页继续筛选。</p>
+  <p>点击时间段会把筛选条件带入数据查询页。</p>
 </section>
 
 <section class="content-grid two">
   <article class="panel chart-panel">
     <div class="panel-head">
-      <h3>预订量与取消率趋势</h3>
-      <div class="segmented" id="trend-granularity">
-        <button class="is-active" type="button" data-granularity="month">月</button>
-        <button type="button" data-granularity="day">日</button>
-      </div>
+      <h3>预订流入与取消风险趋势</h3>
+      <div class="segmented"><button class="is-active">日</button><button>周</button><button>月</button></div>
     </div>
     <div class="bar-chart" id="dashboard-trend"></div>
   </article>
@@ -42,7 +39,7 @@
   <article class="panel">
     <div class="panel-head">
       <h3>高取消风险国家 Top 5</h3>
-      <a href="/bookings">订单明细</a>
+      <a href="/bookings?country_code=PRT">订单明细</a>
     </div>
     <div class="rank-list compact" id="country-risk"></div>
   </article>
