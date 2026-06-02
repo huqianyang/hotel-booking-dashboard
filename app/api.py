@@ -64,25 +64,12 @@ def register_api_routes(app):
 
     @app.get("/api/dashboard/summary")
     def dashboard_summary():
-        frame = _repository().active_bookings()
-        total = len(frame)
-        canceled = int(frame["is_canceled"].sum()) if total else 0
-        latest = frame["event_date"].max() if total else None
-        data = {
-            "total_bookings": total,
-            "canceled_bookings": canceled,
-            "cancel_rate": round(canceled / total, 4) if total else 0,
-            "avg_adr": round(float(frame["adr"].mean()), 2) if total else 0,
-            "high_risk_count": int((frame["lead_time"] >= 90).sum()) if total else 0,
-            "latest_event_time": latest.strftime("%Y-%m-%d 00:00:00") if latest is not None else None,
-        }
-        return _ok(data)
+        return _ok(_realtime_service().dashboard_summary())
 
     @app.get("/api/dashboard/trend")
     def dashboard_trend():
-        granularity = request.args.get("granularity", "month")
-        frame = _repository().active_bookings()
-        return _ok({"points": _trend_points(frame, granularity)})
+        granularity = request.args.get("granularity", "day")
+        return _ok(_realtime_service().trend(granularity))
 
     @app.get("/api/visualization/overview")
     def visualization_overview():
@@ -184,11 +171,26 @@ def register_api_routes(app):
 
     @app.get("/api/realtime/trend")
     def realtime_trend():
-        return _ok(_realtime_service().trend())
+        granularity = request.args.get("granularity", "day")
+        return _ok(_realtime_service().trend(granularity))
 
     @app.get("/api/realtime/recent-predictions")
     def realtime_recent_predictions():
         return _ok(_realtime_service().recent_predictions())
+
+    @app.get("/api/realtime/country-risk")
+    @app.get("/api/dashboard/country-risk")
+    def realtime_country_risk():
+        return _ok(_realtime_service().country_risk())
+
+    @app.get("/api/realtime/channel-risk")
+    @app.get("/api/dashboard/channel-risk")
+    def realtime_channel_risk():
+        return _ok(_realtime_service().channel_risk())
+
+    @app.get("/api/system/service-status")
+    def system_service_status():
+        return _ok(_realtime_service().service_status())
 
 
 def _repository():
@@ -205,7 +207,11 @@ def _realtime_service():
     redis_client = None
     if current_app.config.get("REDIS_ENABLED"):
         redis_client = RedisClient.from_flask_config(current_app.config)
-    return RealtimeService(_repository(), redis_client)
+    return RealtimeService(
+        _repository(),
+        redis_client,
+        metrics_path=current_app.config.get("PREDICTION_METRICS_PATH"),
+    )
 
 
 def _prediction_service():

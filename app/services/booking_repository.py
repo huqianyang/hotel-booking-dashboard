@@ -1,3 +1,4 @@
+import json
 from math import ceil
 from pathlib import Path
 from datetime import date, datetime
@@ -150,6 +151,21 @@ class BookingRepository:
         frame = self.filter_bookings(filters)
         return _paginate_frame(frame, page, page_size, fields or LIST_FIELDS)
 
+    def latest_realtime_summary(self):
+        return None
+
+    def latest_storm_predictions(self, limit=10):
+        return []
+
+    def latest_realtime_trend(self, granularity="day"):
+        return None
+
+    def latest_realtime_risk(self, metric_type):
+        return []
+
+    def ping(self):
+        return True
+
 
 class MySQLBookingRepository:
     def __init__(self, mysql_client):
@@ -217,6 +233,75 @@ class MySQLBookingRepository:
             },
         }
 
+    def latest_realtime_summary(self):
+        rows = self._latest_realtime_metric_rows("summary")
+        return _metrics_to_dict(rows) if rows else None
+
+    def latest_storm_predictions(self, limit=10):
+        with self.mysql_client.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                  pr.booking_id,
+                  hb.hotel_name,
+                  hb.country_name,
+                  pr.cancel_probability,
+                  pr.predicted_label,
+                  pr.risk_level,
+                  pr.predicted_at AS business_time
+                FROM prediction_results pr
+                LEFT JOIN hotel_bookings hb ON hb.booking_id = pr.booking_id
+                WHERE pr.source = %s
+                ORDER BY pr.predicted_at DESC
+                LIMIT %s
+                """,
+                ("storm", int(limit)),
+            )
+            rows = cursor.fetchall()
+        return [_json_record(_prediction_row(row)) for row in rows]
+
+    def latest_realtime_trend(self, granularity="day"):
+        rows = self._latest_realtime_metric_rows(f"trend_{granularity}")
+        if not rows:
+            rows = self._latest_realtime_metric_rows("trend")
+        return _metric_rows_to_points(rows) if rows else None
+
+    def latest_realtime_risk(self, metric_type):
+        rows = self._latest_realtime_metric_rows(metric_type)
+        items = []
+        for row in rows:
+            value = _parse_metric_value(row.get("metric_value"))
+            if isinstance(value, dict):
+                item = dict(value)
+                item.setdefault("name", row.get("metric_name"))
+            else:
+                item = {"name": row.get("metric_name"), "value": value}
+            items.append(_json_record(item))
+        return items
+
+    def ping(self):
+        with self.mysql_client.cursor() as cursor:
+            cursor.execute("SELECT 1 AS ok")
+            row = cursor.fetchone()
+        return bool(row)
+
+    def _latest_realtime_metric_rows(self, metric_type):
+        with self.mysql_client.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT metric_name, metric_value, metric_type, window_start, window_end, updated_at
+                FROM realtime_metrics
+                WHERE metric_type = %s
+                  AND window_end = (
+                    SELECT MAX(window_end) FROM realtime_metrics WHERE metric_type = %s
+                  )
+                ORDER BY metric_name
+                """,
+                (metric_type, metric_type),
+            )
+            rows = cursor.fetchall()
+        return rows
+
 
 def option_pairs(frame, value_column, label_column):
     values = frame[[value_column, label_column]].dropna().drop_duplicates()
@@ -252,6 +337,51 @@ def _normalize_dates(frame):
         if column in frame:
             frame[column] = pd.to_datetime(frame[column], errors="coerce")
     return frame
+
+
+def _metrics_to_dict(rows):
+    data = {}
+    updated_at = None
+    for row in rows:
+        data[row.get("metric_name")] = _parse_metric_value(row.get("metric_value"))
+        updated_at = row.get("updated_at") or row.get("window_end") or updated_at
+    if updated_at is not None:
+        data["updated_at"] = _json_datetime(updated_at)
+    return data
+
+
+def _metric_rows_to_points(rows):
+    grouped = {}
+    for row in rows:
+        label = _json_datetime(row.get("window_start") or row.get("window_end"))
+        point = grouped.setdefault(label, {"label": label})
+        point[row.get("metric_name")] = _parse_metric_value(row.get("metric_value"))
+    return list(grouped.values())
+
+
+def _prediction_row(row):
+    result = dict(row)
+    result["business_time"] = _json_datetime(result.get("business_time"))
+    risk_level = result.get("risk_level")
+    result["risk_level_name"] = f"{risk_level}_risk" if risk_level in {"high", "medium", "low"} else risk_level
+    return result
+
+
+def _parse_metric_value(value):
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except ValueError:
+            pass
+    if isinstance(value, Decimal):
+        return float(value)
+    return value
+
+
+def _json_datetime(value):
+    if isinstance(value, datetime):
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+    return _json_value(value)
 
 
 def _paginate_frame(frame, page, page_size, fields):
