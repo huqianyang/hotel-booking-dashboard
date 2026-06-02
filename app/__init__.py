@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, render_template
 
+from app.api import register_api_routes
+
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -14,5 +16,7 @@ def create_app(test_config=None):
     @app.get("/health")
     def health():
         return jsonify({"status": "ok", "service": "hotel-booking-dashboard"})
+
+    register_api_routes(app)
 
     return app

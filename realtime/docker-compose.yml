@@ -1,0 +1,76 @@
+name: hotel-booking-realtime
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: hotel-redis
+    ports:
+      - "6379:6379"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: hotel-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: hotel-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+
+  storm-nimbus:
+    image: storm:2.6.4
+    container_name: hotel-storm-nimbus
+    command: storm nimbus
+    depends_on:
+      - zookeeper
+    volumes:
+      - ./storm/storm.yaml:/conf/storm.yaml
+    ports:
+      - "6627:6627"
+
+  storm-supervisor:
+    image: storm:2.6.4
+    container_name: hotel-storm-supervisor
+    command: storm supervisor
+    depends_on:
+      - storm-nimbus
+      - zookeeper
+    volumes:
+      - ./storm/storm.yaml:/conf/storm.yaml
+
+  storm-ui:
+    image: storm:2.6.4
+    container_name: hotel-storm-ui
+    command: storm ui
+    depends_on:
+      - storm-nimbus
+    volumes:
+      - ./storm/storm.yaml:/conf/storm.yaml
+    ports:
+      - "8081:8080"
+
+  flume:
+    image: probablyfine/flume:latest
+    container_name: hotel-flume
+    depends_on:
+      - kafka
+    environment:
+      FLUME_AGENT_NAME: agent
+    volumes:
+      - ./flume/flume.conf:/opt/flume-config/flume.conf:ro
+      - ./flume/log4j.properties:/opt/flume-config/log4j.properties:ro
+      - ./events:/data/events
