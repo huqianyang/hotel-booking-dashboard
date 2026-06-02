@@ -2,60 +2,70 @@
   "selected_model": "random_forest",
   "model_version": "random_forest_v1",
   "metrics": {
-    "accuracy": 0.8707,
-    "precision_score": 0.8249,
-    "recall_score": 0.8263,
-    "f1_score": 0.8256,
-    "train_score": 0.9113,
-    "test_score": 0.8707
+    "accuracy": 0.8943,
+    "precision_score": 0.8653,
+    "recall_score": 0.8379,
+    "f1_score": 0.8514,
+    "train_score": 0.924,
+    "test_score": 0.8943
   },
   "comparison": {
     "logistic_regression": {
-      "accuracy": 0.8115,
-      "precision_score": 0.7256,
-      "recall_score": 0.7898,
-      "f1_score": 0.7563,
-      "train_score": 0.8126,
-      "test_score": 0.8115,
+      "accuracy": 0.8318,
+      "precision_score": 0.7481,
+      "recall_score": 0.8055,
+      "f1_score": 0.7757,
+      "train_score": 0.8319,
+      "test_score": 0.8318,
       "confusion_matrix": [
         [
-          12391,
-          2642
+          8654,
+          1568
         ],
         [
-          1859,
-          6986
+          1124,
+          4656
         ]
       ]
     },
     "random_forest": {
-      "accuracy": 0.8707,
-      "precision_score": 0.8249,
-      "recall_score": 0.8263,
-      "f1_score": 0.8256,
-      "train_score": 0.9113,
-      "test_score": 0.8707,
+      "accuracy": 0.8943,
+      "precision_score": 0.8653,
+      "recall_score": 0.8379,
+      "f1_score": 0.8514,
+      "train_score": 0.924,
+      "test_score": 0.8943,
       "confusion_matrix": [
         [
-          13482,
-          1551
+          9468,
+          754
         ],
         [
-          1536,
-          7309
+          937,
+          4843
         ]
       ]
     }
   },
   "confusion_matrix": [
     [
-      13482,
-      1551
+      9468,
+      754
     ],
     [
-      1536,
-      7309
+      937,
+      4843
     ]
   ],
-  "feature_count": 24
+  "feature_count": 24,
+  "data_split": {
+    "offline_cutoff_date": "2017-01-12",
+    "realtime_start_date": "2017-01-13",
+    "offline_source_rows": 80008,
+    "train_rows": 64006,
+    "test_rows": 16002,
+    "realtime_simulation_rows": 39382,
+    "test_size": 0.2,
+    "random_state": 42
+  }
 }
