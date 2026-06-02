@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}酒店预订数据可视化分析与预测系统{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body data-page="{{ active_page }}">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand-block" href="/">
+        <span>酒店预订</span>
+        <strong>风险分析</strong>
+      </a>
+      <nav class="side-nav" aria-label="主导航">
+        <a class="{{ 'is-active' if active_page == 'dashboard' else '' }}" href="/">首页总览</a>
+        <a class="{{ 'is-active' if active_page == 'bookings' else '' }}" href="/bookings">数据查询</a>
+        <a class="{{ 'is-active' if active_page == 'visualization' else '' }}" href="/visualization">数据可视化</a>
+        <a class="{{ 'is-active' if active_page == 'prediction' else '' }}" href="/prediction">评估与预测</a>
+      </nav>
+      <section class="side-status">
+        <h2>{% block sidebar_title %}系统服务{% endblock %}</h2>
+        <div class="status-row"><span>Web</span><b>运行中</b></div>
+        <div class="status-row"><span>MySQL</span><b>就绪</b></div>
+        <div class="status-row"><span>Redis</span><b>模拟</b></div>
+        <div class="status-row"><span>实时链路</span><b>占位</b></div>
+        {% block sidebar_extra %}{% endblock %}
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <header class="page-title">
+        <div>
+          <p class="eyebrow">{% block eyebrow %}HOTEL BOOKING DASHBOARD{% endblock %}</p>
+          <h1>{% block page_heading %}酒店预订风险分析{% endblock %}</h1>
+          <p>{% block page_subtitle %}使用契约字段与 mock 数据先完成页面展示，后续切换真实 API。{% endblock %}</p>
+        </div>
+        {% block title_actions %}{% endblock %}
+      </header>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
