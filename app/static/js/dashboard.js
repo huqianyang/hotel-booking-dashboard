@@ -6,9 +6,6 @@ let summary = {
   high_risk_count: 0,
   latest_event_time: "加载中",
 };
-let trend = [];
-let channels = [];
-let countries = [];
 let recent = [];
 
 const formatPercent = (value) => `${(value * 100).toFixed(1)}%`;
@@ -35,47 +32,6 @@ function renderSummary() {
   document.querySelector("#latest-event-time").textContent = summary.latest_event_time || "暂无数据";
 }
 
-function renderTrend() {
-  const rows = trend.slice(-12);
-  const chart = document.querySelector("#dashboard-trend");
-  if (!rows.length) {
-    chart.innerHTML = `<div class="log-line">暂无趋势数据</div>`;
-    return;
-  }
-  const max = Math.max(...rows.map(([, count]) => count), 1);
-  chart.style.setProperty("--bars", rows.length);
-  chart.innerHTML = rows.map(([period, count, rate], index) => `
-    <button class="bar-slot" data-period="${period}" title="跳转查询 ${period}">
-      <span class="bar ${index % 2 ? "green" : ""} ${index === rows.length - 1 ? "is-selected" : ""}" style="height:${Math.max(20, count / max * 100)}%">
-        <i class="bar-dot" style="top:${Math.max(-12, 95 - rate * 145)}%"></i>
-      </span>
-      <span class="bar-label">${period}</span>
-    </button>
-  `).join("");
-  chart.querySelectorAll(".bar-slot").forEach((button) => {
-    button.addEventListener("click", () => {
-      window.location.href = `/visualization?month=${encodeURIComponent(button.dataset.period)}`;
-    });
-  });
-}
-
-function renderRanks(selector, rows, mode) {
-  const max = Math.max(...rows.map((row) => row[2]), 1);
-  document.querySelector(selector).innerHTML = rows.map(([value, label, count, rate]) => {
-    const query = mode === "country" ? `country_code=${value}` : `market_segment=${encodeURIComponent(value)}`;
-    return `
-      <div class="rank-row">
-        <button type="button" data-query="${query}">${label}</button>
-        <span class="track"><b class="${rate > .5 ? "warn" : ""}" style="width:${count / max * 100}%"></b></span>
-        <strong>${formatPercent(rate)}</strong>
-      </div>
-    `;
-  }).join("");
-  document.querySelectorAll(`${selector} button`).forEach((button) => {
-    button.addEventListener("click", () => { window.location.href = `/bookings?${button.dataset.query}`; });
-  });
-}
-
 function renderRecent() {
   document.querySelector("#recent-predictions").innerHTML = recent.length ? recent.map((item) => `
     <tr>
@@ -88,33 +44,20 @@ function renderRecent() {
 }
 
 async function loadDashboard() {
-  const [summaryData, trendData, overviewData, realtimeData] = await Promise.all([
+  const [summaryData, realtimeData] = await Promise.all([
     apiGet("/api/dashboard/summary"),
-    apiGet("/api/dashboard/trend?granularity=month"),
-    apiGet("/api/visualization/overview"),
     apiGet("/api/realtime/recent-predictions"),
   ]);
 
   summary = summaryData;
-  trend = (trendData.points || []).map((row) => [row.period, row.booking_count, row.cancel_rate]);
-  channels = (overviewData.channel_ranking || []).slice(0, 5).map((row) => [
-    row.market_segment,
-    row.name,
-    row.booking_count,
-    row.cancel_rate,
-  ]);
-  countries = (overviewData.country_map || []).slice(0, 5).map((row) => [
-    row.code,
-    row.name,
-    row.booking_count,
-    row.value,
-  ]);
   recent = realtimeData.items || [];
 
   renderSummary();
-  renderTrend();
-  renderRanks("#channel-risk", channels, "channel");
-  renderRanks("#country-risk", countries, "country");
+  await Promise.all([
+    renderPyeChart("#dashboard-trend", "/api/charts/dashboard-trend?granularity=month"),
+    renderPyeChart("#channel-risk", "/api/charts/dashboard-channel-risk"),
+    renderPyeChart("#country-risk", "/api/charts/dashboard-country-risk"),
+  ]);
   renderRecent();
 }
 

@@ -12,6 +12,7 @@ from app.services.booking_repository import (
     MySQLBookingRepository,
     option_pairs,
 )
+from app.services.chart_options_service import ChartOptionsService
 from app.services.prediction_service import PredictionService
 from app.services.realtime_service import RealtimeService
 
@@ -72,34 +73,7 @@ def register_api_routes(app):
 
     @app.get("/api/visualization/overview")
     def visualization_overview():
-        filters = {
-            "country_code": request.args.get("country_code") or None,
-            "month": request.args.get("month") or None,
-            "market_segment": request.args.get("market_segment") or None,
-            "customer_type": request.args.get("customer_type") or None,
-            "risk_tag": request.args.get("risk_tag") or None,
-        }
-        frame = _repository().active_bookings()
-        frame = _apply_visualization_filters(frame, filters)
-        total = len(frame)
-        canceled = int(frame["is_canceled"].sum()) if total else 0
-        data = {
-            "filters": filters,
-            "summary": {
-                "booking_count": total,
-                "cancel_count": canceled,
-                "cancel_rate": round(canceled / total, 4) if total else 0,
-                "avg_adr": round(float(frame["adr"].mean()), 2) if total else 0,
-            },
-            "trend": _trend_points(frame, "month"),
-            "cancel_structure": _cancel_structure(frame),
-            "factor_bars": _factor_bars(frame),
-            "channel_ranking": _channel_ranking(frame),
-            "country_map": _country_map(frame),
-            "risk_tags": _risk_tags(frame),
-            "sample_orders": _sample_orders(frame),
-        }
-        return _ok(data)
+        return _ok(_visualization_overview_data())
 
     @app.get("/api/prediction/candidate-bookings")
     def candidate_bookings():
@@ -168,6 +142,56 @@ def register_api_routes(app):
     def system_service_status():
         return _ok(_realtime_service().service_status())
 
+    @app.get("/api/charts/dashboard-trend")
+    def chart_dashboard_trend():
+        granularity = request.args.get("granularity", "day")
+        return _ok(_chart_options_service().dashboard_trend(granularity))
+
+    @app.get("/api/charts/dashboard-country-risk")
+    def chart_dashboard_country_risk():
+        return _ok(_chart_options_service().dashboard_country_risk())
+
+    @app.get("/api/charts/dashboard-channel-risk")
+    def chart_dashboard_channel_risk():
+        return _ok(_chart_options_service().dashboard_channel_risk())
+
+    @app.get("/api/charts/realtime-trend")
+    def chart_realtime_trend():
+        granularity = request.args.get("granularity", "day")
+        return _ok(_chart_options_service().realtime_trend(granularity))
+
+    @app.get("/api/charts/model-metrics")
+    def chart_model_metrics():
+        return _ok(_chart_options_service().model_metrics())
+
+    @app.get("/api/charts/confusion-matrix")
+    def chart_confusion_matrix():
+        return _ok(_chart_options_service().confusion_matrix())
+
+    @app.get("/api/charts/visualization-trend")
+    def chart_visualization_trend():
+        return _ok(_chart_options_service().visualization_trend(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-cancel-structure")
+    def chart_visualization_cancel_structure():
+        return _ok(_chart_options_service().visualization_cancel_structure(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-factor-bars")
+    def chart_visualization_factor_bars():
+        return _ok(_chart_options_service().visualization_factor_bars(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-channel-ranking")
+    def chart_visualization_channel_ranking():
+        return _ok(_chart_options_service().visualization_channel_ranking(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-risk-tags")
+    def chart_visualization_risk_tags():
+        return _ok(_chart_options_service().visualization_risk_tags(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-country-risk")
+    def chart_visualization_country_risk():
+        return _ok(_chart_options_service().visualization_country_risk(_visualization_overview_data()))
+
 
 def _repository():
     if current_app.config.get("BOOKING_DATA_SOURCE") == "mysql":
@@ -199,6 +223,10 @@ def _prediction_service():
     )
 
 
+def _chart_options_service():
+    return ChartOptionsService(_realtime_service(), _prediction_service())
+
+
 def _booking_filters():
     return {
         "hotel": request.args.get("hotel"),
@@ -207,6 +235,40 @@ def _booking_filters():
         "customer_type": request.args.get("customer_type"),
         "is_canceled": request.args.get("is_canceled"),
         "keyword": request.args.get("keyword"),
+    }
+
+
+def _visualization_filters():
+    return {
+        "country_code": request.args.get("country_code") or None,
+        "month": request.args.get("month") or None,
+        "market_segment": request.args.get("market_segment") or None,
+        "customer_type": request.args.get("customer_type") or None,
+        "risk_tag": request.args.get("risk_tag") or None,
+    }
+
+
+def _visualization_overview_data():
+    filters = _visualization_filters()
+    frame = _repository().active_bookings()
+    frame = _apply_visualization_filters(frame, filters)
+    total = len(frame)
+    canceled = int(frame["is_canceled"].sum()) if total else 0
+    return {
+        "filters": filters,
+        "summary": {
+            "booking_count": total,
+            "cancel_count": canceled,
+            "cancel_rate": round(canceled / total, 4) if total else 0,
+            "avg_adr": round(float(frame["adr"].mean()), 2) if total else 0,
+        },
+        "trend": _trend_points(frame, "month"),
+        "cancel_structure": _cancel_structure(frame),
+        "factor_bars": _factor_bars(frame),
+        "channel_ranking": _channel_ranking(frame),
+        "country_map": _country_map(frame),
+        "risk_tags": _risk_tags(frame),
+        "sample_orders": _sample_orders(frame),
     }
 
 

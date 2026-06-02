@@ -201,36 +201,20 @@ button { cursor: pointer; }
   border-color: var(--green);
 }
 
-.bar-chart {
-  min-height: 250px;
-  display: grid;
-  grid-template-columns: repeat(var(--bars, 6), minmax(0, 1fr));
-  gap: 12px;
-  align-items: end;
-  padding: 18px 0 0;
-  border-bottom: 1px solid #ead7aa;
-}
-.bar-slot { height: 230px; display: flex; flex-direction: column; justify-content: end; gap: 7px; text-align: center; }
-.bar {
-  position: relative;
+.echart-box {
+  min-height: 270px;
   width: 100%;
-  min-height: 18px;
-  border-radius: 10px 10px 0 0;
-  background: linear-gradient(to top, var(--copper), #f0c060);
 }
-.bar.green { background: linear-gradient(to top, var(--green), #75ba8d); }
-.bar.is-selected { outline: 5px solid rgba(31,77,58,.15); }
-.bar-dot {
-  position: absolute;
-  right: 10px;
-  top: -7px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--danger);
-  box-shadow: 0 0 0 4px rgba(185,28,28,.13);
+#channel-risk,
+#country-risk,
+#factor-bars,
+#cancel-donut,
+#risk-tags,
+#channel-ranking,
+#model-metrics,
+#confusion-matrix {
+  min-height: 270px;
 }
-.bar-label { font-size: 12px; color: #7b6036; white-space: nowrap; }
 
 .rank-list { display: grid; gap: 11px; }
 .rank-row {
@@ -326,54 +310,6 @@ td { padding: 11px; border-bottom: 1px solid #f1dfb6; color: #4c3a24; white-spac
   color: #6b4f25;
 }
 .chip.is-active { color: #fff; background: var(--green); border-color: var(--green); }
-.donut {
-  width: 190px;
-  height: 190px;
-  margin: 18px auto;
-  border-radius: 50%;
-  background: conic-gradient(var(--green) 0 57%, var(--copper) 57% 83%, #75ba8d 83% 100%);
-  position: relative;
-}
-.donut::after {
-  content: attr(data-label);
-  position: absolute;
-  inset: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #fff;
-  color: var(--green);
-  white-space: pre;
-  text-align: center;
-  font-weight: 900;
-}
-.tag-cloud { min-height: 190px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 12px; }
-.tag-cloud button { border: 0; background: transparent; color: var(--green); font-weight: 900; }
-.tag-cloud .big { font-size: 30px; color: var(--copper); }
-.tag-cloud .mid { font-size: 22px; }
-.mock-map {
-  min-height: 270px;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid #ead7aa;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 28% 47%, #d9b66e 0 8%, transparent 9%),
-    radial-gradient(circle at 48% 36%, #ecd7a5 0 7%, transparent 8%),
-    radial-gradient(circle at 68% 52%, #dfc88c 0 8%, transparent 9%),
-    linear-gradient(135deg, #f7ecd3, #fffaf0);
-}
-.map-point {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  border: 0;
-  border-radius: 999px;
-  padding: 6px 9px;
-  color: #fff;
-  background: var(--copper);
-  box-shadow: 0 0 18px rgba(180,83,9,.35);
-}
-
 .tab-page { display: none; margin-top: 16px; }
 .tab-page.is-active { display: block; }
 .tabs { margin-top: 18px; }
@@ -388,12 +324,6 @@ td { padding: 11px; border-bottom: 1px solid #f1dfb6; color: #4c3a24; white-spac
 .reason-list { display: grid; gap: 12px; }
 .reason-card { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid #ead7aa; border-radius: 15px; background: #fffaf0; }
 .reason-card b:first-child { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: var(--green); }
-.matrix { display: grid; grid-template-columns: 120px 1fr 1fr; border: 1px solid #ead7aa; border-radius: 15px; overflow: hidden; }
-.matrix div { min-height: 58px; padding: 10px; border-right: 1px solid #ead7aa; border-bottom: 1px solid #ead7aa; display: grid; align-content: center; }
-.matrix .head { background: #fff3d8; color: #6b4f25; font-weight: 800; }
-.matrix .good { color: var(--green); background: #e7f5ee; font-weight: 800; }
-.matrix .bad { color: var(--copper); background: #fff7ed; font-weight: 800; }
-
 @media (max-width: 1180px) {
   .app-shell, .content-grid.two, .content-grid.three, .content-grid.query-layout { grid-template-columns: 1fr; }
   .sidebar { min-height: auto; }

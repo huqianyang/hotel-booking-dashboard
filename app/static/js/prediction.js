@@ -74,18 +74,13 @@ async function renderSingle() {
 
 async function renderMetrics() {
   metrics = await apiGet("/api/prediction/model-metrics");
-  const metricLabels = [["准确率", "accuracy"], ["精确率", "precision_score"], ["召回率", "recall_score"], ["F1 值", "f1_score"]];
-  document.querySelector("#model-metrics").innerHTML = metricLabels.map(([label, key]) => `
-    <article class="metric-card"><small>${label}</small><strong>${p(metrics.metrics[key])}</strong><em>${key}</em></article>
-  `).join("");
   document.querySelector("#model-comparison").innerHTML = metrics.model_comparison.length ? metrics.model_comparison.map((row) => `
     <tr><td>${row.model_name}</td><td>${p(row.accuracy)}</td><td>${p(row.precision_score)}</td><td>${p(row.recall_score)}</td><td>${p(row.f1_score)}</td></tr>
   `).join("") : `<tr><td colspan="5">暂无模型对比数据</td></tr>`;
-  const m = metrics.confusion_matrix;
-  document.querySelector("#confusion-matrix").innerHTML = `
-    <div class="panel-head"><h3>混淆矩阵</h3><span>confusion_matrix</span></div>
-    <div class="matrix"><div class="head"></div><div class="head">预测未取消</div><div class="head">预测取消</div><div class="head">实际未取消</div><div class="good">预测正确<br>${m.true_negative}</div><div class="bad">误报<br>${m.false_positive}</div><div class="head">实际取消</div><div class="bad">漏报<br>${m.false_negative}</div><div class="good">预测正确<br>${m.true_positive}</div></div>
-  `;
+  await Promise.all([
+    renderPyeChart("#model-metrics", "/api/charts/model-metrics"),
+    renderPyeChart("#confusion-matrix", "/api/charts/confusion-matrix"),
+  ]);
 }
 
 async function renderBatches() {

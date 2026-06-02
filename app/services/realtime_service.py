@@ -53,15 +53,17 @@ class RealtimeService:
             "message": WAITING_MESSAGE,
         }
 
-    def trend(self, granularity="day"):
+    def trend(self, granularity="day", include_source=False):
         granularity = granularity if granularity in {"day", "week", "month"} else "day"
         cached = self._get_cached("realtime:trend")
+        source = "redis" if cached is not None else "none"
         rows = _select_granularity(cached, granularity)
         if rows is None and hasattr(self.repository, "latest_realtime_trend"):
             rows = self.repository.latest_realtime_trend(granularity)
+            source = "mysql" if rows else "none"
         if not rows:
-            return _empty_trend(granularity)
-        return _trend_series(rows, granularity)
+            return _with_source(_empty_trend(granularity), source if source != "redis" else "none", include_source)
+        return _with_source(_trend_series(rows, granularity), source, include_source)
 
     def recent_predictions(self, limit=10):
         cached = self._get_cached("realtime:recent_predictions")
@@ -72,11 +74,11 @@ class RealtimeService:
             return {"items": [], "status": "waiting", "message": WAITING_MESSAGE}
         return {"items": items[:limit], "status": "running"}
 
-    def country_risk(self):
-        return self._risk("realtime:country_risk", "country_risk")
+    def country_risk(self, include_source=False):
+        return self._risk("realtime:country_risk", "country_risk", include_source=include_source)
 
-    def channel_risk(self):
-        return self._risk("realtime:channel_risk", "channel_risk")
+    def channel_risk(self, include_source=False):
+        return self._risk("realtime:channel_risk", "channel_risk", include_source=include_source)
 
     def service_status(self):
         link_status = self._get_cached("realtime:link_status") or {}
@@ -101,14 +103,16 @@ class RealtimeService:
                 return "mysql", summary
         return "none", {}
 
-    def _risk(self, redis_key, metric_type):
+    def _risk(self, redis_key, metric_type, include_source=False):
         cached = self._get_cached(redis_key)
+        source = "redis" if cached is not None else "none"
         items = _items(cached)
         if items is None and hasattr(self.repository, "latest_realtime_risk"):
             items = self.repository.latest_realtime_risk(metric_type)
+            source = "mysql" if items else "none"
         if not items:
-            return {"items": [], "status": "waiting", "message": WAITING_MESSAGE}
-        return {"items": items, "status": "running"}
+            return _with_source({"items": [], "status": "waiting", "message": WAITING_MESSAGE}, source if source != "redis" else "none", include_source)
+        return _with_source({"items": items, "status": "running"}, source, include_source)
 
     def _offline_base_rows(self):
         try:
@@ -208,6 +212,12 @@ def _empty_trend(granularity):
         "status": "waiting",
         "message": WAITING_MESSAGE,
     }
+
+
+def _with_source(payload, source, include_source):
+    if not include_source:
+        return payload
+    return {**payload, "source": source}
 
 
 def _items(value):
