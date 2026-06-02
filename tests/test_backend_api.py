@@ -303,7 +303,7 @@ def test_bookings_list_filters_paginates_and_excludes_deleted_rows(tmp_path):
     assert "is_deleted" not in payload["data"]["items"][0]
 
 
-def test_dashboard_summary_aggregates_active_bookings(tmp_path):
+def test_dashboard_summary_uses_fixed_offline_base_when_realtime_waiting(tmp_path):
     client = _client(tmp_path)
 
     response = client.get("/api/dashboard/summary")
@@ -311,11 +311,12 @@ def test_dashboard_summary_aggregates_active_bookings(tmp_path):
     payload = response.get_json()
     assert response.status_code == 200
     assert payload["success"] is True
-    assert payload["data"]["total_bookings"] == 2
-    assert payload["data"]["canceled_bookings"] == 1
-    assert payload["data"]["cancel_rate"] == 0.5
-    assert payload["data"]["avg_adr"] == 90.25
-    assert payload["data"]["latest_event_time"] == "2017-02-01 00:00:00"
+    assert payload["data"]["offline_base_rows"] == 80008
+    assert payload["data"]["realtime_processed_count"] == 0
+    assert payload["data"]["total_bookings"] == 80008
+    assert payload["data"]["high_risk_count"] == 0
+    assert payload["data"]["average_cancel_probability"] == 0.0
+    assert payload["data"]["status"] == "waiting"
 
 
 def test_visualization_overview_returns_contract_sections(tmp_path):
@@ -441,7 +442,7 @@ def test_booking_delete_marks_logical_delete(tmp_path):
     }
 
 
-def test_realtime_summary_stub_returns_service_status(tmp_path):
+def test_realtime_summary_returns_waiting_state_without_live_data(tmp_path):
     client = _client(tmp_path)
 
     response = client.get("/api/realtime/summary")
@@ -449,44 +450,28 @@ def test_realtime_summary_stub_returns_service_status(tmp_path):
     payload = response.get_json()
     assert response.status_code == 200
     assert payload["success"] is True
-    assert payload["data"]["processed_count"] == 2
-    assert payload["data"]["latest_business_time"] == "2017-02-01 00:00:00"
-    assert payload["data"]["latest_cancel_rate"] == 0.5
-    assert payload["data"]["latest_high_risk_count"] == 1
-    assert payload["data"]["service_status"] == {
-        "mysql": "running",
-        "redis": "stub",
-        "flume": "pending",
-        "kafka": "pending",
-        "storm": "pending",
-    }
+    assert payload["data"]["processed_count"] == 0
+    assert payload["data"]["status"] == "waiting"
+    assert payload["data"]["message"] == "等待实时链路数据"
 
 
-def test_realtime_trend_stub_returns_points(tmp_path):
+def test_realtime_trend_returns_echarts_contract_without_stub_points(tmp_path):
     client = _client(tmp_path)
 
-    response = client.get("/api/realtime/trend")
+    response = client.get("/api/realtime/trend?granularity=week")
 
     payload = response.get_json()
     assert response.status_code == 200
     assert payload["success"] is True
-    assert payload["data"]["points"] == [
-        {
-            "business_time": "2017-01-14 00:00:00",
-            "processed_count": 1,
-            "cancel_rate": 1.0,
-            "high_risk_count": 1,
-        },
-        {
-            "business_time": "2017-02-01 00:00:00",
-            "processed_count": 1,
-            "cancel_rate": 0.0,
-            "high_risk_count": 0,
-        },
-    ]
+    assert payload["data"]["granularity"] == "week"
+    assert payload["data"]["labels"] == []
+    assert payload["data"]["inflow"] == []
+    assert payload["data"]["predicted_cancellations"] == []
+    assert payload["data"]["cancel_rate"] == []
+    assert payload["data"]["status"] == "waiting"
 
 
-def test_realtime_recent_predictions_stub_returns_contract_items(tmp_path):
+def test_realtime_recent_predictions_returns_empty_waiting_state_without_stub(tmp_path):
     client = _client(tmp_path)
 
     response = client.get("/api/realtime/recent-predictions")
@@ -494,11 +479,17 @@ def test_realtime_recent_predictions_stub_returns_contract_items(tmp_path):
     payload = response.get_json()
     assert response.status_code == 200
     assert payload["success"] is True
-    assert payload["data"]["items"][0] == {
-        "booking_id": 1,
-        "hotel_name": "City Hotel",
-        "country_name": "Portugal",
-        "cancel_probability": 0.85,
-        "risk_level_name": "high_risk",
-        "business_time": "2017-01-14 00:00:00",
-    }
+    assert payload["data"] == {"items": [], "status": "waiting", "message": "等待实时链路数据"}
+
+
+def test_realtime_risk_and_service_status_endpoints_are_not_static_mocks(tmp_path):
+    client = _client(tmp_path)
+
+    country_response = client.get("/api/realtime/country-risk")
+    channel_response = client.get("/api/realtime/channel-risk")
+    status_response = client.get("/api/system/service-status")
+
+    assert country_response.get_json()["data"] == {"items": [], "status": "waiting", "message": "等待实时链路数据"}
+    assert channel_response.get_json()["data"] == {"items": [], "status": "waiting", "message": "等待实时链路数据"}
+    assert status_response.get_json()["data"]["services"]["flask"] == "running"
+    assert status_response.get_json()["data"]["services"]["redis"] == "disabled"

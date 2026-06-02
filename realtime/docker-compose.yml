@@ -32,18 +32,19 @@ services:
       - "9092:9092"
 
   storm-nimbus:
-    image: storm:2.6.4
+    image: storm:2.4.0
     container_name: hotel-storm-nimbus
     command: storm nimbus
     depends_on:
       - zookeeper
     volumes:
       - ./storm/storm.yaml:/conf/storm.yaml
+      - ./storm-topology/target:/topology
     ports:
       - "6627:6627"
 
   storm-supervisor:
-    image: storm:2.6.4
+    image: storm:2.4.0
     container_name: hotel-storm-supervisor
     command: storm supervisor
     depends_on:
@@ -53,7 +54,7 @@ services:
       - ./storm/storm.yaml:/conf/storm.yaml
 
   storm-ui:
-    image: storm:2.6.4
+    image: storm:2.4.0
     container_name: hotel-storm-ui
     command: storm ui
     depends_on:
