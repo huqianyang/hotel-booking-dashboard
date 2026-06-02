@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from app.data.split_policy import filter_realtime_event_data
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -38,7 +40,7 @@ def parse_args(argv=None):
 
 
 def build_events(csv_path, count, start):
-    frame = pd.read_csv(csv_path)
+    frame = filter_realtime_event_data(pd.read_csv(csv_path))
     sample = frame.iloc[start : start + count]
     events = []
     for _, row in sample.iterrows():

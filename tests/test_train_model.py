@@ -93,6 +93,46 @@ def test_model_feature_columns_match_field_contract():
     assert MODEL_FEATURE_COLUMNS == EXPECTED_FEATURE_COLUMNS
 
 
+def test_load_offline_training_data_uses_fixed_arrival_date_boundary(tmp_path):
+    from scripts.train_model import load_offline_training_data
+
+    frame = make_training_frame()
+    offline_rows = frame.head(8).copy()
+    realtime_rows = frame.tail(3).copy()
+    offline_rows["arrival_date"] = [
+        "2017-01-10",
+        "2017-01-10",
+        "2017-01-11",
+        "2017-01-11",
+        "2017-01-12",
+        "2017-01-12",
+        "2017-01-12",
+        "2017-01-12",
+    ]
+    offline_rows["event_date"] = offline_rows["arrival_date"]
+    realtime_rows["arrival_date"] = ["2017-01-13", "2017-01-14", "2017-01-15"]
+    realtime_rows["event_date"] = realtime_rows["arrival_date"]
+    input_csv = tmp_path / "cleaned_hotel_bookings.csv"
+    pd.concat([offline_rows, realtime_rows], ignore_index=True).to_csv(input_csv, index=False, encoding="utf-8-sig")
+
+    offline_data = load_offline_training_data(input_csv)
+
+    assert len(offline_data) == 8
+    assert pd.to_datetime(offline_data["arrival_date"]).max() <= pd.Timestamp("2017-01-12")
+    assert set(offline_data["booking_id"]) == set(offline_rows["booking_id"])
+
+
+def test_cleaned_csv_matches_project_split_counts():
+    from app.data.split_policy import count_split_rows
+    from scripts.train_model import DEFAULT_INPUT_CSV
+
+    counts = count_split_rows(pd.read_csv(DEFAULT_INPUT_CSV))
+
+    assert counts.total_rows == 119390
+    assert counts.offline_rows == 80008
+    assert counts.realtime_rows == 39382
+
+
 def test_train_and_save_writes_contract_outputs(tmp_path):
     from scripts.train_model import train_and_save
 

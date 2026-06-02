@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import pickle
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,6 +19,11 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from app.data.split_policy import OFFLINE_CUTOFF_DATE, REALTIME_START_DATE, count_split_rows, filter_offline_model_data
+
 DEFAULT_INPUT_CSV = PROJECT_ROOT / "数据" / "cleaned_hotel_bookings.csv"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "models"
 TARGET_COLUMN = "is_canceled"
@@ -124,10 +130,17 @@ def choose_best_model(results: dict[str, dict[str, float | list[list[int]]]]) ->
     return max(results, key=lambda name: (float(results[name]["f1_score"]), float(results[name]["accuracy"])))
 
 
+def load_offline_training_data(input_csv: str | Path) -> pd.DataFrame:
+    data = pd.read_csv(input_csv)
+    return filter_offline_model_data(data)
+
+
 def train_and_save(input_csv: str | Path = DEFAULT_INPUT_CSV, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> TrainingResult:
     input_csv = Path(input_csv)
     output_dir = Path(output_dir)
-    data = pd.read_csv(input_csv)
+    raw_data = pd.read_csv(input_csv)
+    data = filter_offline_model_data(raw_data)
+    split_counts = count_split_rows(raw_data)
     missing_columns = [column for column in [*MODEL_FEATURE_COLUMNS, TARGET_COLUMN] if column not in data.columns]
     if missing_columns:
         raise ValueError(f"cleaned data missing columns: {missing_columns}")
@@ -152,6 +165,16 @@ def train_and_save(input_csv: str | Path = DEFAULT_INPUT_CSV, output_dir: str | 
         "comparison": comparison,
         "confusion_matrix": selected_metrics["confusion_matrix"],
         "feature_count": len(MODEL_FEATURE_COLUMNS),
+        "data_split": {
+            "offline_cutoff_date": OFFLINE_CUTOFF_DATE,
+            "realtime_start_date": REALTIME_START_DATE,
+            "offline_source_rows": split_counts.offline_rows,
+            "train_rows": len(x_train),
+            "test_rows": len(x_test),
+            "realtime_simulation_rows": split_counts.realtime_rows,
+            "test_size": 0.2,
+            "random_state": 42,
+        },
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
