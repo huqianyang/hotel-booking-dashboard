@@ -14,15 +14,15 @@ def create_app(test_config=None):
         return render_template("index.html")
 
     @app.get("/bookings")
-    def bookings():
+    def bookings_page():
         return render_template("bookings.html")
 
     @app.get("/visualization")
-    def visualization():
+    def visualization_page():
         return render_template("visualization.html")
 
     @app.get("/prediction")
-    def prediction():
+    def prediction_page():
         return render_template("prediction.html")
 
     @app.get("/health")
