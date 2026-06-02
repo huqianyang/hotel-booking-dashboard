@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 from flask import current_app, jsonify, request
@@ -140,30 +139,7 @@ def register_api_routes(app):
     def batch_records():
         page = max(int(request.args.get("page", 1)), 1)
         page_size = max(int(request.args.get("page_size", 10)), 1)
-        items = [
-            {
-                "batch_id": "stub-2017-02",
-                "business_date": "2017-02-01",
-                "time_window": "00:00-23:59",
-                "total_count": len(_repository().active_bookings()),
-                "predicted_cancel_count": 0,
-                "high_risk_count": 0,
-                "avg_cancel_probability": 0.0,
-                "source": "stub",
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        ]
-        return _ok(
-            {
-                "items": items[(page - 1) * page_size : page * page_size],
-                "pagination": {
-                    "page": page,
-                    "page_size": page_size,
-                    "total": len(items),
-                    "total_pages": 1,
-                },
-            }
-        )
+        return _ok(_repository().latest_prediction_batches(page=page, page_size=page_size))
 
     @app.get("/api/realtime/summary")
     def realtime_summary():
@@ -332,64 +308,6 @@ def _sample_orders(frame):
         {field: _json_value(row[field]) for field in SAMPLE_ORDER_FIELDS}
         for _, row in frame.head(10).iterrows()
     ]
-
-
-def _stub_probability(booking):
-    score = 0.15
-    if booking.get("lead_time", 0) >= 90:
-        score += 0.3
-    if booking.get("previous_cancellations", 0) > 0:
-        score += 0.25
-    if booking.get("total_of_special_requests", 0) == 0:
-        score += 0.15
-    if booking.get("deposit_type") == "Non Refund":
-        score += 0.15
-    return round(min(score, 0.95), 4)
-
-
-def _risk_level(probability):
-    if probability >= 0.6:
-        return "high", "high_risk"
-    if probability >= 0.3:
-        return "medium", "medium_risk"
-    return "low", "low_risk"
-
-
-def _reason_tags(booking):
-    tags = []
-    if booking.get("lead_time", 0) >= 90:
-        tags.append("lead_time_high")
-    if booking.get("previous_cancellations", 0) > 0:
-        tags.append("previous_cancellations")
-    if booking.get("total_of_special_requests", 0) == 0:
-        tags.append("no_special_requests")
-    return tags or ["baseline_stub"]
-
-
-def _stub_model_metrics():
-    return {
-        "selected_model": {
-            "model_name": "stub_model",
-            "model_version": "stub_v1",
-            "is_selected": 1,
-            "reason": "temporary API stub before trained model is delivered",
-        },
-        "metrics": {
-            "accuracy": 0.0,
-            "precision_score": 0.0,
-            "recall_score": 0.0,
-            "f1_score": 0.0,
-            "train_score": 0.0,
-            "test_score": 0.0,
-        },
-        "model_comparison": [],
-        "confusion_matrix": {
-            "true_negative": 0,
-            "false_positive": 0,
-            "false_negative": 0,
-            "true_positive": 0,
-        },
-    }
 
 
 def _cancel_rate(frame):

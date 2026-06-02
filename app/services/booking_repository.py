@@ -157,6 +157,11 @@ class BookingRepository:
     def latest_storm_predictions(self, limit=10):
         return []
 
+    def latest_prediction_batches(self, page=1, page_size=10):
+        page = max(int(page or 1), 1)
+        page_size = max(min(int(page_size or 10), 100), 1)
+        return _empty_batch_records(page, page_size)
+
     def latest_realtime_trend(self, granularity="day"):
         return None
 
@@ -260,6 +265,61 @@ class MySQLBookingRepository:
             rows = cursor.fetchall()
         return [_json_record(_prediction_row(row)) for row in rows]
 
+    def latest_prediction_batches(self, page=1, page_size=10):
+        page = max(int(page or 1), 1)
+        page_size = max(min(int(page_size or 10), 100), 1)
+        offset = (page - 1) * page_size
+        with self.mysql_client.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS total
+                FROM (
+                  SELECT DATE(predicted_at) AS business_date
+                  FROM prediction_results
+                  WHERE source = %s
+                  GROUP BY DATE(predicted_at), source
+                ) grouped_batches
+                """,
+                ("storm",),
+            )
+            total = int(cursor.fetchall()[0]["total"])
+            if not total:
+                metric_batch = self._latest_metric_batch(page, page_size)
+                if metric_batch:
+                    return metric_batch
+                return _empty_batch_records(page, page_size)
+            cursor.execute(
+                """
+                SELECT
+                  CONCAT(source, '-', DATE_FORMAT(DATE(predicted_at), '%%Y-%%m-%%d')) AS batch_id,
+                  DATE(predicted_at) AS business_date,
+                  CONCAT(TIME_FORMAT(MIN(predicted_at), '%%H:%%i:%%s'), '-', TIME_FORMAT(MAX(predicted_at), '%%H:%%i:%%s')) AS time_window,
+                  COUNT(*) AS total_count,
+                  SUM(CASE WHEN predicted_label = 1 THEN 1 ELSE 0 END) AS predicted_cancel_count,
+                  SUM(CASE WHEN risk_level = 'high' THEN 1 ELSE 0 END) AS high_risk_count,
+                  AVG(cancel_probability) AS avg_cancel_probability,
+                  source,
+                  MAX(predicted_at) AS created_at
+                FROM prediction_results
+                WHERE source = %s
+                GROUP BY DATE(predicted_at), source
+                ORDER BY MAX(predicted_at) DESC
+                LIMIT %s OFFSET %s
+                """,
+                ("storm", page_size, offset),
+            )
+            rows = cursor.fetchall()
+        return {
+            "items": [_json_record(_batch_row(row)) for row in rows],
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total": total,
+                "total_pages": ceil(total / page_size) if total else 0,
+            },
+            "status": "running",
+        }
+
     def latest_realtime_trend(self, granularity="day"):
         rows = self._latest_realtime_metric_rows(f"trend_{granularity}")
         if not rows:
@@ -301,6 +361,38 @@ class MySQLBookingRepository:
             )
             rows = cursor.fetchall()
         return rows
+
+    def _latest_metric_batch(self, page, page_size):
+        if page != 1:
+            return None
+        summary = self.latest_realtime_summary()
+        if not summary:
+            return None
+        total_count = int(summary.get("processed_count") or 0)
+        if total_count <= 0:
+            return None
+        updated_at = summary.get("updated_at")
+        item = {
+            "batch_id": "storm-metrics-latest",
+            "business_date": updated_at[:10] if isinstance(updated_at, str) and len(updated_at) >= 10 else None,
+            "time_window": "latest",
+            "total_count": total_count,
+            "predicted_cancel_count": int(summary.get("predicted_cancellations") or 0),
+            "high_risk_count": int(summary.get("high_risk_count") or 0),
+            "avg_cancel_probability": round(float(summary.get("average_cancel_probability") or 0), 4),
+            "source": "storm_metrics",
+            "created_at": updated_at,
+        }
+        return {
+            "items": [item],
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total": 1,
+                "total_pages": 1,
+            },
+            "status": "running",
+        }
 
 
 def option_pairs(frame, value_column, label_column):
@@ -365,6 +457,31 @@ def _prediction_row(row):
     risk_level = result.get("risk_level")
     result["risk_level_name"] = f"{risk_level}_risk" if risk_level in {"high", "medium", "low"} else risk_level
     return result
+
+
+def _batch_row(row):
+    result = dict(row)
+    result["business_date"] = _json_value(result.get("business_date"))
+    result["created_at"] = _json_datetime(result.get("created_at"))
+    result["total_count"] = int(result.get("total_count") or 0)
+    result["predicted_cancel_count"] = int(result.get("predicted_cancel_count") or 0)
+    result["high_risk_count"] = int(result.get("high_risk_count") or 0)
+    result["avg_cancel_probability"] = round(float(result.get("avg_cancel_probability") or 0), 4)
+    return result
+
+
+def _empty_batch_records(page, page_size):
+    return {
+        "items": [],
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total": 0,
+            "total_pages": 0,
+        },
+        "status": "waiting",
+        "message": "绛夊緟瀹炴椂閾捐矾鏁版嵁",
+    }
 
 
 def _parse_metric_value(value):
