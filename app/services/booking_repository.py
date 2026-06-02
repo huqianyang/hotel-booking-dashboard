@@ -1,5 +1,7 @@
 from math import ceil
 from pathlib import Path
+from datetime import date, datetime
+from decimal import Decimal
 
 import pandas as pd
 
@@ -277,10 +279,16 @@ def _json_record(record):
 def _json_value(value):
     if pd.isna(value):
         return None
+    if isinstance(value, datetime):
+        return value.strftime("%Y-%m-%d")
+    if isinstance(value, date):
+        return value.strftime("%Y-%m-%d")
     if isinstance(value, pd.Timestamp):
         return value.strftime("%Y-%m-%d")
     if hasattr(value, "item"):
         value = value.item()
+    if isinstance(value, Decimal):
+        return round(float(value), 4)
     if isinstance(value, float):
         return round(value, 4)
     return value
