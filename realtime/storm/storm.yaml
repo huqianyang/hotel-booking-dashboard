@@ -1,0 +1,8 @@
+storm.zookeeper.servers:
+  - zookeeper
+nimbus.seeds: ["storm-nimbus"]
+storm.local.dir: "/data/storm"
+ui.port: 8080
+supervisor.slots.ports:
+  - 6700
+  - 6701

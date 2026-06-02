@@ -4,6 +4,7 @@ from pathlib import Path
 from flask import current_app, jsonify, request
 
 from app.database.mysql import MySQLClient, MySQLConfig
+from app.redis_client import RedisClient
 from app.services.booking_repository import (
     DETAIL_FIELDS,
     LIST_FIELDS,
@@ -12,6 +13,7 @@ from app.services.booking_repository import (
     MySQLBookingRepository,
     option_pairs,
 )
+from app.services.realtime_service import RealtimeService
 
 
 def register_api_routes(app):
@@ -189,65 +191,15 @@ def register_api_routes(app):
 
     @app.get("/api/realtime/summary")
     def realtime_summary():
-        frame = _repository().active_bookings()
-        total = len(frame)
-        latest = frame["event_date"].max() if total else None
-        data = {
-            "processed_count": total,
-            "latest_business_time": latest.strftime("%Y-%m-%d 00:00:00") if latest is not None else None,
-            "latest_cancel_rate": _cancel_rate(frame),
-            "latest_high_risk_count": int((frame["lead_time"] >= 90).sum()) if total else 0,
-            "service_status": {
-                "mysql": "running",
-                "redis": "stub",
-                "flume": "pending",
-                "kafka": "pending",
-                "storm": "pending",
-            },
-        }
-        return _ok(data)
+        return _ok(_realtime_service().summary())
 
     @app.get("/api/realtime/trend")
     def realtime_trend():
-        frame = _repository().active_bookings()
-        if frame.empty:
-            return _ok({"points": []})
-        points = []
-        grouped = frame.assign(business_time=frame["event_date"].dt.strftime("%Y-%m-%d 00:00:00")).groupby(
-            "business_time"
-        )
-        for business_time, group in grouped:
-            points.append(
-                {
-                    "business_time": business_time,
-                    "processed_count": len(group),
-                    "cancel_rate": _cancel_rate(group),
-                    "high_risk_count": int((group["lead_time"] >= 90).sum()),
-                }
-            )
-        return _ok({"points": points})
+        return _ok(_realtime_service().trend())
 
     @app.get("/api/realtime/recent-predictions")
     def realtime_recent_predictions():
-        frame = _repository().active_bookings()
-        if frame.empty:
-            return _ok({"items": []})
-        items = []
-        for _, row in frame.sort_values("event_date").head(10).iterrows():
-            booking = {field: _json_value(row[field]) for field in row.index}
-            probability = _stub_probability(booking)
-            _, risk_level_name = _risk_level(probability)
-            items.append(
-                {
-                    "booking_id": booking["booking_id"],
-                    "hotel_name": booking["hotel_name"],
-                    "country_name": booking["country_name"],
-                    "cancel_probability": probability,
-                    "risk_level_name": risk_level_name,
-                    "business_time": row["event_date"].strftime("%Y-%m-%d 00:00:00"),
-                }
-            )
-        return _ok({"items": items})
+        return _ok(_realtime_service().recent_predictions())
 
 
 def _repository():
@@ -258,6 +210,13 @@ def _repository():
     if not csv_path:
         csv_path = Path(current_app.root_path).parent / "\u6570\u636e" / "cleaned_hotel_bookings.csv"
     return BookingRepository(csv_path)
+
+
+def _realtime_service():
+    redis_client = None
+    if current_app.config.get("REDIS_ENABLED"):
+        redis_client = RedisClient.from_flask_config(current_app.config)
+    return RealtimeService(_repository(), redis_client)
 
 
 def _booking_filters():
