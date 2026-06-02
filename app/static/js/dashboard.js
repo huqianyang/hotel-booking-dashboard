@@ -1,63 +1,52 @@
-const summary = {
-  total_bookings: 80256,
-  canceled_bookings: 29722,
-  cancel_rate: 0.3704,
-  avg_adr: 101.83,
-  high_risk_count: 58,
-  latest_event_time: "2017-01-14 14:00:00",
+let summary = {
+  total_bookings: 0,
+  canceled_bookings: 0,
+  cancel_rate: 0,
+  avg_adr: 0,
+  high_risk_count: 0,
+  latest_event_time: "加载中",
 };
-
-const trend = [
-  ["08:00-10:00", 56, 0.286],
-  ["10:00-12:00", 88, 0.354],
-  ["12:00-14:00", 156, 0.432],
-  ["14:00-16:00", 112, 0.388],
-  ["16:00-18:00", 190, 0.451],
-  ["18:00-20:00", 164, 0.409],
-];
-
-const channels = [
-  ["Online TA", 126, 0.436],
-  ["Groups", 39, 0.611],
-  ["Direct", 44, 0.189],
-  ["Offline TA/TO", 35, 0.315],
-];
-
-const countries = [
-  ["PRT", "葡萄牙", 86, 0.566],
-  ["ESP", "西班牙", 38, 0.254],
-  ["FRA", "法国", 31, 0.185],
-  ["DEU", "德国", 22, 0.167],
-];
-
-const recent = [
-  { booking_id: 80242, hotel_name: "城市酒店", country_name: "葡萄牙", cancel_probability: 0.82, risk_level_name: "高风险" },
-  { booking_id: 80243, hotel_name: "度假酒店", country_name: "西班牙", cancel_probability: 0.61, risk_level_name: "中风险" },
-  { booking_id: 80244, hotel_name: "城市酒店", country_name: "法国", cancel_probability: 0.48, risk_level_name: "中风险" },
-];
+let trend = [];
+let channels = [];
+let countries = [];
+let recent = [];
 
 const formatPercent = (value) => `${(value * 100).toFixed(1)}%`;
 
+async function apiGet(url) {
+  const response = await fetch(url);
+  const payload = await response.json();
+  if (!response.ok || payload.success === false) {
+    throw new Error(payload.message || `请求失败：${url}`);
+  }
+  return payload.data;
+}
+
 function renderSummary() {
   const cards = [
-    ["当前总预订量", summary.total_bookings.toLocaleString(), "历史基线 + 已处理订单"],
+    ["当前总预订量", summary.total_bookings.toLocaleString(), "真实 API 返回的活跃订单"],
     ["历史取消率", formatPercent(summary.cancel_rate), `${summary.canceled_bookings.toLocaleString()} 条已取消`],
-    ["平均每日房价", summary.avg_adr.toFixed(2), "字段：avg_adr"],
-    ["当前高风险订单", summary.high_risk_count, "点击查看明细 >"],
+    ["平均每日房价", Number(summary.avg_adr || 0).toFixed(2), "字段：avg_adr"],
+    ["当前高风险订单", summary.high_risk_count.toLocaleString(), "lead_time >= 90"],
   ];
   document.querySelector("#dashboard-summary").innerHTML = cards.map(([name, value, note]) => `
     <article class="metric-card"><small>${name}</small><strong>${value}</strong><em>${note}</em></article>
   `).join("");
-  document.querySelector("#latest-event-time").textContent = summary.latest_event_time;
+  document.querySelector("#latest-event-time").textContent = summary.latest_event_time || "暂无数据";
 }
 
 function renderTrend() {
-  const max = Math.max(...trend.map(([, count]) => count));
+  const rows = trend.slice(-12);
   const chart = document.querySelector("#dashboard-trend");
-  chart.style.setProperty("--bars", trend.length);
-  chart.innerHTML = trend.map(([period, count, rate], index) => `
+  if (!rows.length) {
+    chart.innerHTML = `<div class="log-line">暂无趋势数据</div>`;
+    return;
+  }
+  const max = Math.max(...rows.map(([, count]) => count), 1);
+  chart.style.setProperty("--bars", rows.length);
+  chart.innerHTML = rows.map(([period, count, rate], index) => `
     <button class="bar-slot" data-period="${period}" title="跳转查询 ${period}">
-      <span class="bar ${index % 2 ? "green" : ""} ${index === 2 ? "is-selected" : ""}" style="height:${Math.max(20, count / max * 100)}%">
+      <span class="bar ${index % 2 ? "green" : ""} ${index === rows.length - 1 ? "is-selected" : ""}" style="height:${Math.max(20, count / max * 100)}%">
         <i class="bar-dot" style="top:${Math.max(-12, 95 - rate * 145)}%"></i>
       </span>
       <span class="bar-label">${period}</span>
@@ -65,19 +54,15 @@ function renderTrend() {
   `).join("");
   chart.querySelectorAll(".bar-slot").forEach((button) => {
     button.addEventListener("click", () => {
-      window.location.href = `/bookings?event_date=2017-01-14&period=${encodeURIComponent(button.dataset.period)}`;
+      window.location.href = `/visualization?month=${encodeURIComponent(button.dataset.period)}`;
     });
   });
 }
 
-function renderRanks(selector, rows) {
-  const max = Math.max(...rows.map((row) => row[2]));
-  document.querySelector(selector).innerHTML = rows.map(([codeOrName, labelOrCount, countOrRate, maybeRate]) => {
-    const isCountry = maybeRate !== undefined;
-    const label = isCountry ? labelOrCount : codeOrName;
-    const count = isCountry ? countOrRate : labelOrCount;
-    const rate = isCountry ? maybeRate : countOrRate;
-    const query = isCountry ? `country_code=${codeOrName}` : `market_segment=${encodeURIComponent(label)}`;
+function renderRanks(selector, rows, mode) {
+  const max = Math.max(...rows.map((row) => row[2]), 1);
+  document.querySelector(selector).innerHTML = rows.map(([value, label, count, rate]) => {
+    const query = mode === "country" ? `country_code=${value}` : `market_segment=${encodeURIComponent(value)}`;
     return `
       <div class="rank-row">
         <button type="button" data-query="${query}">${label}</button>
@@ -92,25 +77,54 @@ function renderRanks(selector, rows) {
 }
 
 function renderRecent() {
-  document.querySelector("#recent-predictions").innerHTML = recent.map((item) => `
+  document.querySelector("#recent-predictions").innerHTML = recent.length ? recent.map((item) => `
     <tr>
       <td><a href="/prediction?booking_id=${item.booking_id}">#${item.booking_id}</a></td>
       <td>${item.country_name}</td>
       <td>${formatPercent(item.cancel_probability)}</td>
-      <td><span class="risk-pill ${item.cancel_probability > .7 ? "" : "medium"}">${item.risk_level_name}</span></td>
+      <td><span class="risk-pill ${item.cancel_probability > .7 ? "" : item.cancel_probability > .35 ? "medium" : "low"}">${item.risk_level_name}</span></td>
     </tr>
-  `).join("");
+  `).join("") : `<tr><td colspan="4">暂无预测记录</td></tr>`;
 }
 
-renderSummary();
-renderTrend();
-renderRanks("#channel-risk", channels);
-renderRanks("#country-risk", countries);
-renderRecent();
+async function loadDashboard() {
+  const [summaryData, trendData, overviewData, realtimeData] = await Promise.all([
+    apiGet("/api/dashboard/summary"),
+    apiGet("/api/dashboard/trend?granularity=month"),
+    apiGet("/api/visualization/overview"),
+    apiGet("/api/realtime/recent-predictions"),
+  ]);
+
+  summary = summaryData;
+  trend = (trendData.points || []).map((row) => [row.period, row.booking_count, row.cancel_rate]);
+  channels = (overviewData.channel_ranking || []).slice(0, 5).map((row) => [
+    row.market_segment,
+    row.name,
+    row.booking_count,
+    row.cancel_rate,
+  ]);
+  countries = (overviewData.country_map || []).slice(0, 5).map((row) => [
+    row.code,
+    row.name,
+    row.booking_count,
+    row.value,
+  ]);
+  recent = realtimeData.items || [];
+
+  renderSummary();
+  renderTrend();
+  renderRanks("#channel-risk", channels, "channel");
+  renderRanks("#country-risk", countries, "country");
+  renderRecent();
+}
 
 document.querySelector("#toggle-simulation")?.addEventListener("click", (event) => {
   const status = document.querySelector("#simulation-status");
   const running = status.textContent === "运行中";
   status.textContent = running ? "已暂停" : "运行中";
-  event.currentTarget.textContent = running ? "启动模拟" : "停止模拟";
+  event.currentTarget.textContent = running ? "启动模拟" : "暂停模拟";
+});
+
+loadDashboard().catch((error) => {
+  document.querySelector("#dashboard-summary").innerHTML = `<article class="metric-card"><small>加载失败</small><strong>API</strong><em>${error.message}</em></article>`;
 });

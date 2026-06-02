@@ -241,6 +241,10 @@ def _apply_visualization_filters(frame, filters):
         frame = frame[frame["customer_type"].astype(str) == filters["customer_type"]]
     if filters["risk_tag"] == "lead_time_high":
         frame = frame[frame["lead_time"] >= 90]
+    if filters["risk_tag"] == "no_special_requests":
+        frame = frame[frame["total_of_special_requests"] == 0]
+    if filters["risk_tag"] == "previous_cancellations":
+        frame = frame[frame["previous_cancellations"] > 0]
     return frame
 
 
@@ -275,19 +279,26 @@ def _factor_bars(frame):
     if frame.empty:
         return []
     return [
-        {"name": "lead_time_high", "cancel_rate": _cancel_rate(frame[frame["lead_time"] >= 90])},
-        {"name": "no_special_requests", "cancel_rate": _cancel_rate(frame[frame["total_of_special_requests"] == 0])},
-        {"name": "previous_cancellations", "cancel_rate": _cancel_rate(frame[frame["previous_cancellations"] > 0])},
+        {"name": "lead_time_high", "risk_tag": "lead_time_high", "cancel_rate": _cancel_rate(frame[frame["lead_time"] >= 90])},
+        {"name": "no_special_requests", "risk_tag": "no_special_requests", "cancel_rate": _cancel_rate(frame[frame["total_of_special_requests"] == 0])},
+        {"name": "previous_cancellations", "risk_tag": "previous_cancellations", "cancel_rate": _cancel_rate(frame[frame["previous_cancellations"] > 0])},
     ]
 
 
 def _channel_ranking(frame):
     if frame.empty:
         return []
-    grouped = frame.groupby("market_segment_name")
+    grouped = frame.groupby(["market_segment", "market_segment_name"])
     rows = []
-    for name, group in grouped:
-        rows.append({"name": name, "booking_count": len(group), "cancel_rate": _cancel_rate(group)})
+    for (market_segment, name), group in grouped:
+        rows.append(
+            {
+                "name": name,
+                "market_segment": market_segment,
+                "booking_count": len(group),
+                "cancel_rate": _cancel_rate(group),
+            }
+        )
     return sorted(rows, key=lambda item: item["booking_count"], reverse=True)
 
 
