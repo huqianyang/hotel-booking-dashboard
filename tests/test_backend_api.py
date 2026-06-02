@@ -608,3 +608,38 @@ def test_confusion_matrix_chart_options_are_generated_from_training_metrics(tmp_
     assert sorted(options["series"][0]["data"]) == sorted(
         [[0, 0, 13482], [1, 0, 1551], [0, 1, 1536], [1, 1, 7309]]
     )
+
+
+def test_visualization_chart_options_cover_all_analysis_charts(tmp_path):
+    client = _client(tmp_path)
+    endpoints = {
+        "/api/charts/visualization-trend": "line",
+        "/api/charts/visualization-cancel-structure": "pie",
+        "/api/charts/visualization-factor-bars": "bar",
+        "/api/charts/visualization-channel-ranking": "bar",
+        "/api/charts/visualization-risk-tags": "wordcloud",
+        "/api/charts/visualization-country-risk": "bar",
+    }
+
+    for endpoint, chart_type in endpoints.items():
+        response = client.get(endpoint)
+        payload = response.get_json()
+        options = _chart_options(payload)
+
+        assert response.status_code == 200
+        assert payload["data"]["chart_type"] == chart_type
+        assert payload["data"]["status"] == "running"
+        assert payload["data"]["source"] == "mysql"
+        assert options != {}
+
+
+def test_chart_endpoints_accept_visualization_filters(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/charts/visualization-trend?country_code=PRT")
+    payload = response.get_json()
+    options = _chart_options(payload)
+
+    assert response.status_code == 200
+    assert payload["data"]["chart_type"] == "line"
+    assert [point[1] for point in options["series"][0]["data"]] == [1]

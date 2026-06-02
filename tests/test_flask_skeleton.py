@@ -82,6 +82,7 @@ def test_frontend_static_assets_exist():
         "app/templates/bookings.html",
         "app/templates/visualization.html",
         "app/templates/prediction.html",
+        "app/static/js/charts.js",
         "app/static/js/dashboard.js",
         "app/static/js/bookings.js",
         "app/static/js/visualization.js",
@@ -90,6 +91,30 @@ def test_frontend_static_assets_exist():
 
     for relative_path in expected_files:
         assert (BASE_DIR / relative_path).exists(), f"Missing {relative_path}"
+
+
+def test_frontend_pages_load_echarts_renderer_for_pyecharts_options():
+    app = create_app({"TESTING": True})
+    client = app.test_client()
+
+    for path in ("/", "/visualization", "/prediction"):
+        response = client.get(path)
+        html = response.get_data(as_text=True)
+
+        assert response.status_code == 200
+        assert "echarts.min.js" in html
+        assert "static/js/charts.js" in html
+
+
+def test_visualization_page_no_longer_uses_static_mock_map_container():
+    app = create_app({"TESTING": True})
+    client = app.test_client()
+
+    response = client.get("/visualization")
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "mock-map" not in html
 
 
 def test_health_endpoint_reports_application_status():

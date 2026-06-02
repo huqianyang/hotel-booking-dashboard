@@ -73,34 +73,7 @@ def register_api_routes(app):
 
     @app.get("/api/visualization/overview")
     def visualization_overview():
-        filters = {
-            "country_code": request.args.get("country_code") or None,
-            "month": request.args.get("month") or None,
-            "market_segment": request.args.get("market_segment") or None,
-            "customer_type": request.args.get("customer_type") or None,
-            "risk_tag": request.args.get("risk_tag") or None,
-        }
-        frame = _repository().active_bookings()
-        frame = _apply_visualization_filters(frame, filters)
-        total = len(frame)
-        canceled = int(frame["is_canceled"].sum()) if total else 0
-        data = {
-            "filters": filters,
-            "summary": {
-                "booking_count": total,
-                "cancel_count": canceled,
-                "cancel_rate": round(canceled / total, 4) if total else 0,
-                "avg_adr": round(float(frame["adr"].mean()), 2) if total else 0,
-            },
-            "trend": _trend_points(frame, "month"),
-            "cancel_structure": _cancel_structure(frame),
-            "factor_bars": _factor_bars(frame),
-            "channel_ranking": _channel_ranking(frame),
-            "country_map": _country_map(frame),
-            "risk_tags": _risk_tags(frame),
-            "sample_orders": _sample_orders(frame),
-        }
-        return _ok(data)
+        return _ok(_visualization_overview_data())
 
     @app.get("/api/prediction/candidate-bookings")
     def candidate_bookings():
@@ -195,6 +168,30 @@ def register_api_routes(app):
     def chart_confusion_matrix():
         return _ok(_chart_options_service().confusion_matrix())
 
+    @app.get("/api/charts/visualization-trend")
+    def chart_visualization_trend():
+        return _ok(_chart_options_service().visualization_trend(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-cancel-structure")
+    def chart_visualization_cancel_structure():
+        return _ok(_chart_options_service().visualization_cancel_structure(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-factor-bars")
+    def chart_visualization_factor_bars():
+        return _ok(_chart_options_service().visualization_factor_bars(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-channel-ranking")
+    def chart_visualization_channel_ranking():
+        return _ok(_chart_options_service().visualization_channel_ranking(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-risk-tags")
+    def chart_visualization_risk_tags():
+        return _ok(_chart_options_service().visualization_risk_tags(_visualization_overview_data()))
+
+    @app.get("/api/charts/visualization-country-risk")
+    def chart_visualization_country_risk():
+        return _ok(_chart_options_service().visualization_country_risk(_visualization_overview_data()))
+
 
 def _repository():
     if current_app.config.get("BOOKING_DATA_SOURCE") == "mysql":
@@ -238,6 +235,40 @@ def _booking_filters():
         "customer_type": request.args.get("customer_type"),
         "is_canceled": request.args.get("is_canceled"),
         "keyword": request.args.get("keyword"),
+    }
+
+
+def _visualization_filters():
+    return {
+        "country_code": request.args.get("country_code") or None,
+        "month": request.args.get("month") or None,
+        "market_segment": request.args.get("market_segment") or None,
+        "customer_type": request.args.get("customer_type") or None,
+        "risk_tag": request.args.get("risk_tag") or None,
+    }
+
+
+def _visualization_overview_data():
+    filters = _visualization_filters()
+    frame = _repository().active_bookings()
+    frame = _apply_visualization_filters(frame, filters)
+    total = len(frame)
+    canceled = int(frame["is_canceled"].sum()) if total else 0
+    return {
+        "filters": filters,
+        "summary": {
+            "booking_count": total,
+            "cancel_count": canceled,
+            "cancel_rate": round(canceled / total, 4) if total else 0,
+            "avg_adr": round(float(frame["adr"].mean()), 2) if total else 0,
+        },
+        "trend": _trend_points(frame, "month"),
+        "cancel_structure": _cancel_structure(frame),
+        "factor_bars": _factor_bars(frame),
+        "channel_ranking": _channel_ranking(frame),
+        "country_map": _country_map(frame),
+        "risk_tags": _risk_tags(frame),
+        "sample_orders": _sample_orders(frame),
     }
 
 

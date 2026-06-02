@@ -1,5 +1,5 @@
 from pyecharts import options as opts
-from pyecharts.charts import Bar, HeatMap, Line, Pie
+from pyecharts.charts import Bar, HeatMap, Line, Pie, WordCloud
 
 from app.services.realtime_service import WAITING_MESSAGE
 
@@ -85,6 +85,80 @@ class ChartOptionsService:
             "source": "metrics",
         }
 
+    def visualization_trend(self, overview):
+        rows = overview.get("trend", [])
+        chart = (
+            Line()
+            .add_xaxis([row.get("period", "") for row in rows])
+            .add_yaxis("booking_count", [int(row.get("booking_count", 0)) for row in rows], is_smooth=True)
+            .add_yaxis("cancel_count", [int(row.get("cancel_count", 0)) for row in rows], is_smooth=True)
+            .add_yaxis("cancel_rate", [_risk_value(row) for row in rows], is_smooth=True)
+            .set_global_opts(
+                tooltip_opts=opts.TooltipOpts(trigger="axis"),
+                xaxis_opts=opts.AxisOpts(type_="category"),
+                yaxis_opts=opts.AxisOpts(type_="value"),
+            )
+        )
+        return _mysql_payload("line", chart)
+
+    def visualization_cancel_structure(self, overview):
+        items = overview.get("cancel_structure", [])
+        chart = Pie()
+        if items:
+            chart.add("bookings", [(item.get("name", ""), int(item.get("value", 0))) for item in items])
+        chart.set_global_opts(tooltip_opts=opts.TooltipOpts(trigger="item"))
+        return _mysql_payload("pie", chart)
+
+    def visualization_factor_bars(self, overview):
+        rows = overview.get("factor_bars", [])
+        chart = (
+            Bar()
+            .add_xaxis([row.get("name", "") for row in rows])
+            .add_yaxis("cancel_rate", [_risk_value(row) for row in rows])
+            .set_global_opts(
+                tooltip_opts=opts.TooltipOpts(trigger="axis"),
+                xaxis_opts=opts.AxisOpts(type_="category"),
+                yaxis_opts=opts.AxisOpts(min_=0, max_=1),
+            )
+        )
+        return _mysql_payload("bar", chart)
+
+    def visualization_channel_ranking(self, overview):
+        rows = overview.get("channel_ranking", [])
+        chart = (
+            Bar()
+            .add_xaxis([row.get("name", "") for row in rows])
+            .add_yaxis("cancel_rate", [_risk_value(row) for row in rows])
+            .set_global_opts(
+                tooltip_opts=opts.TooltipOpts(trigger="axis"),
+                xaxis_opts=opts.AxisOpts(type_="category"),
+                yaxis_opts=opts.AxisOpts(min_=0, max_=1),
+            )
+        )
+        return _mysql_payload("bar", chart)
+
+    def visualization_risk_tags(self, overview):
+        rows = overview.get("risk_tags", [])
+        chart = WordCloud()
+        if rows:
+            chart.add("risk_tags", [(row.get("name", ""), int(row.get("value", 0))) for row in rows])
+        chart.set_global_opts(tooltip_opts=opts.TooltipOpts(trigger="item"))
+        return _mysql_payload("wordcloud", chart)
+
+    def visualization_country_risk(self, overview):
+        rows = sorted(overview.get("country_map", []), key=lambda row: row.get("value", 0), reverse=True)
+        chart = (
+            Bar()
+            .add_xaxis([row.get("name", "") for row in rows])
+            .add_yaxis("cancel_rate", [_risk_value(row) for row in rows])
+            .set_global_opts(
+                tooltip_opts=opts.TooltipOpts(trigger="axis"),
+                xaxis_opts=opts.AxisOpts(type_="category"),
+                yaxis_opts=opts.AxisOpts(min_=0, max_=1),
+            )
+        )
+        return _mysql_payload("bar", chart)
+
     def _trend(self, granularity):
         trend = self.realtime_service.trend(granularity, include_source=True)
         chart = (
@@ -110,6 +184,16 @@ def _payload(chart_type, chart, source_payload):
         "status": status,
         "message": source_payload.get("message") or ("ok" if status == "running" else WAITING_MESSAGE),
         "source": source_payload.get("source", "none"),
+    }
+
+
+def _mysql_payload(chart_type, chart):
+    return {
+        "chart_type": chart_type,
+        "options": chart.dump_options(),
+        "status": "running",
+        "message": "ok",
+        "source": "mysql",
     }
 
 
