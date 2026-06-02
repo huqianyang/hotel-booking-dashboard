@@ -12,6 +12,7 @@ from app.services.booking_repository import (
     MySQLBookingRepository,
     option_pairs,
 )
+from app.services.chart_options_service import ChartOptionsService
 from app.services.prediction_service import PredictionService
 from app.services.realtime_service import RealtimeService
 
@@ -168,6 +169,32 @@ def register_api_routes(app):
     def system_service_status():
         return _ok(_realtime_service().service_status())
 
+    @app.get("/api/charts/dashboard-trend")
+    def chart_dashboard_trend():
+        granularity = request.args.get("granularity", "day")
+        return _ok(_chart_options_service().dashboard_trend(granularity))
+
+    @app.get("/api/charts/dashboard-country-risk")
+    def chart_dashboard_country_risk():
+        return _ok(_chart_options_service().dashboard_country_risk())
+
+    @app.get("/api/charts/dashboard-channel-risk")
+    def chart_dashboard_channel_risk():
+        return _ok(_chart_options_service().dashboard_channel_risk())
+
+    @app.get("/api/charts/realtime-trend")
+    def chart_realtime_trend():
+        granularity = request.args.get("granularity", "day")
+        return _ok(_chart_options_service().realtime_trend(granularity))
+
+    @app.get("/api/charts/model-metrics")
+    def chart_model_metrics():
+        return _ok(_chart_options_service().model_metrics())
+
+    @app.get("/api/charts/confusion-matrix")
+    def chart_confusion_matrix():
+        return _ok(_chart_options_service().confusion_matrix())
+
 
 def _repository():
     if current_app.config.get("BOOKING_DATA_SOURCE") == "mysql":
@@ -197,6 +224,10 @@ def _prediction_service():
         feature_columns_path=current_app.config.get("PREDICTION_FEATURE_COLUMNS_PATH"),
         metrics_path=current_app.config.get("PREDICTION_METRICS_PATH"),
     )
+
+
+def _chart_options_service():
+    return ChartOptionsService(_realtime_service(), _prediction_service())
 
 
 def _booking_filters():

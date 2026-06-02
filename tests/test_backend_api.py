@@ -522,3 +522,89 @@ def test_realtime_risk_and_service_status_endpoints_are_not_static_mocks(tmp_pat
     assert channel_response.get_json()["data"] == {"items": [], "status": "waiting", "message": "等待实时链路数据"}
     assert status_response.get_json()["data"]["services"]["flask"] == "running"
     assert status_response.get_json()["data"]["services"]["redis"] == "disabled"
+
+
+def _chart_options(payload):
+    assert payload["success"] is True
+    options = payload["data"]["options"]
+    assert isinstance(options, str)
+    return json.loads(options)
+
+
+def test_dashboard_trend_chart_options_accept_granularity_and_wait_without_fake_points(tmp_path):
+    client = _client(tmp_path)
+
+    for granularity in ("day", "week", "month"):
+        response = client.get(f"/api/charts/dashboard-trend?granularity={granularity}")
+        payload = response.get_json()
+        options = _chart_options(payload)
+
+        assert response.status_code == 200
+        assert payload["data"]["chart_type"] == "line"
+        assert payload["data"]["status"] == "waiting"
+        assert payload["data"]["source"] == "none"
+        assert payload["data"]["message"] == "等待实时链路数据"
+        assert options["xAxis"][0]["data"] == []
+        assert all(series["data"] == [] for series in options["series"])
+
+
+def test_realtime_trend_chart_options_use_same_waiting_contract(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/charts/realtime-trend?granularity=month")
+    payload = response.get_json()
+    options = _chart_options(payload)
+
+    assert response.status_code == 200
+    assert payload["data"]["chart_type"] == "line"
+    assert payload["data"]["status"] == "waiting"
+    assert options["xAxis"][0]["data"] == []
+    assert all(series["data"] == [] for series in options["series"])
+
+
+def test_risk_chart_options_wait_without_static_mock_data(tmp_path):
+    client = _client(tmp_path)
+
+    country_response = client.get("/api/charts/dashboard-country-risk")
+    channel_response = client.get("/api/charts/dashboard-channel-risk")
+    country_payload = country_response.get_json()
+    channel_payload = channel_response.get_json()
+    country_options = _chart_options(country_payload)
+    channel_options = _chart_options(channel_payload)
+
+    assert country_payload["data"]["chart_type"] == "bar"
+    assert channel_payload["data"]["chart_type"] == "pie"
+    assert country_payload["data"]["status"] == "waiting"
+    assert channel_payload["data"]["status"] == "waiting"
+    assert country_options["xAxis"][0]["data"] == []
+    assert country_options["series"][0]["data"] == []
+    assert channel_options.get("series", []) == []
+
+
+def test_model_metric_chart_options_are_generated_from_training_metrics(tmp_path):
+    client = _client_with_model(tmp_path)
+
+    response = client.get("/api/charts/model-metrics")
+    payload = response.get_json()
+    options = _chart_options(payload)
+
+    assert response.status_code == 200
+    assert payload["data"]["chart_type"] == "bar"
+    assert payload["data"]["status"] == "running"
+    assert options["xAxis"][0]["data"] == ["accuracy", "precision_score", "recall_score", "f1_score"]
+    assert options["series"][0]["data"] == [0.87, 0.82, 0.83, 0.825]
+
+
+def test_confusion_matrix_chart_options_are_generated_from_training_metrics(tmp_path):
+    client = _client_with_model(tmp_path)
+
+    response = client.get("/api/charts/confusion-matrix")
+    payload = response.get_json()
+    options = _chart_options(payload)
+
+    assert response.status_code == 200
+    assert payload["data"]["chart_type"] == "heatmap"
+    assert payload["data"]["status"] == "running"
+    assert sorted(options["series"][0]["data"]) == sorted(
+        [[0, 0, 13482], [1, 0, 1551], [0, 1, 1536], [1, 1, 7309]]
+    )
