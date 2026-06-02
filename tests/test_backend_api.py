@@ -391,6 +391,35 @@ def test_model_metrics_reads_training_artifact_and_formats_frontend_contract(tmp
     }
 
 
+def test_prediction_batch_records_returns_waiting_without_stub_data(tmp_path):
+    client = _client(tmp_path)
+
+    response = client.get("/api/prediction/batch-records?page=1&page_size=10")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["data"] == {
+        "items": [],
+        "pagination": {
+            "page": 1,
+            "page_size": 10,
+            "total": 0,
+            "total_pages": 0,
+        },
+        "status": "waiting",
+        "message": "绛夊緟瀹炴椂閾捐矾鏁版嵁",
+    }
+
+
+def test_api_module_no_longer_contains_stub_prediction_helpers():
+    api_source = (Path(__file__).resolve().parents[1] / "app" / "api.py").read_text(encoding="utf-8")
+
+    assert "_stub_probability" not in api_source
+    assert "_stub_model_metrics" not in api_source
+    assert "stub-2017-02" not in api_source
+
+
 def test_booking_detail_returns_contract_fields(tmp_path):
     client = _client(tmp_path)
 

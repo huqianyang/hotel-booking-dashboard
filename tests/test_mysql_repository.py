@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from app.database.mysql import MySQLConfig
@@ -152,3 +152,51 @@ def test_mysql_repository_updates_only_allowed_fields_and_logically_deletes():
     assert deleted is True
     assert delete_sql == "UPDATE hotel_bookings SET is_deleted = 1 WHERE booking_id = %s"
     assert delete_params == (1,)
+
+
+def test_mysql_repository_returns_storm_prediction_batch_records():
+    client = FakeClient(
+        [
+            [{"total": 1}],
+            [
+                {
+                    "batch_id": "storm-2017-01-13",
+                    "business_date": date(2017, 1, 13),
+                    "time_window": "00:00:00-23:59:59",
+                    "total_count": 25,
+                    "predicted_cancel_count": 8,
+                    "high_risk_count": 5,
+                    "avg_cancel_probability": Decimal("0.4267"),
+                    "source": "storm",
+                    "created_at": datetime(2017, 1, 13, 23, 59, 59),
+                }
+            ],
+        ]
+    )
+    repository = MySQLBookingRepository(client)
+
+    result = repository.latest_prediction_batches(page=1, page_size=10)
+
+    count_sql, count_params = client.cursor_obj.statements[0]
+    list_sql, list_params = client.cursor_obj.statements[1]
+    assert "prediction_results" in count_sql
+    assert "source = %s" in count_sql
+    assert count_params == ("storm",)
+    assert "prediction_results" in list_sql
+    assert "GROUP BY DATE(predicted_at), source" in list_sql
+    assert list_params == ("storm", 10, 0)
+    assert result["items"] == [
+        {
+            "batch_id": "storm-2017-01-13",
+            "business_date": "2017-01-13",
+            "time_window": "00:00:00-23:59:59",
+            "total_count": 25,
+            "predicted_cancel_count": 8,
+            "high_risk_count": 5,
+            "avg_cancel_probability": 0.4267,
+            "source": "storm",
+            "created_at": "2017-01-13 23:59:59",
+        }
+    ]
+    assert result["pagination"]["total"] == 1
+    assert result["status"] == "running"
