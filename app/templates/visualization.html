@@ -3,11 +3,11 @@
 {% block title %}数据可视化 - 酒店预订数据可视化分析与预测系统{% endblock %}
 {% block eyebrow %}LINKED VISUAL ANALYTICS{% endblock %}
 {% block page_heading %}取消率预测可视化分析{% endblock %}
-{% block page_subtitle %}点击国家、月份、渠道或风险标签后，统一筛选状态会更新全部图表和订单摘要表。{% endblock %}
+{% block page_subtitle %}点击月份、风险因素、渠道或国家后，统一筛选状态会更新全部图表和订单摘要。{% endblock %}
 {% block content %}
 <section class="filter-strip">
   <strong>当前图表联动筛选</strong>
-  <div class="chip-row" id="viz-filter-chips" data-field="country_code"></div>
+  <div class="chip-row" id="viz-filter-chips"></div>
   <button type="button" id="viz-reset">清除筛选</button>
 </section>
 
@@ -41,11 +41,11 @@
 
 <section class="content-grid two">
   <article class="panel">
-    <div class="panel-head"><h3>世界地图取消率分布</h3><span>country_code</span></div>
+    <div class="panel-head"><h3>国家取消率分布</h3><span>country_code</span></div>
     <div class="mock-map" id="country-map"></div>
   </article>
   <article class="panel table-panel">
-    <div class="panel-head"><h3>当前筛选订单摘要表</h3><span>sample_orders</span></div>
+    <div class="panel-head"><h3>当前筛选订单摘要</h3><span>sample_orders</span></div>
     <table>
       <thead><tr><th>订单</th><th>酒店</th><th>国家</th><th>提前天数</th><th>ADR</th><th>状态</th></tr></thead>
       <tbody id="viz-orders"></tbody>

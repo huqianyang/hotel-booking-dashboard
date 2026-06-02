@@ -3,18 +3,18 @@
 {% block title %}评估与预测 - 酒店预订数据可视化分析与预测系统{% endblock %}
 {% block eyebrow %}MODEL WORKBENCH{% endblock %}
 {% block page_heading %}模型评估与订单预测{% endblock %}
-{% block page_subtitle %}三页签工作台：订单预测、模型评估详情、批量预测记录，mock 字段对齐预测接口契约。{% endblock %}
+{% block page_subtitle %}选择订单后调用预测接口，查看取消概率、风险等级、原因标签、模型指标和批量预测记录。{% endblock %}
 {% block sidebar_title %}模型信息{% endblock %}
 {% block sidebar_extra %}
   <div class="side-divider"></div>
-  <div class="status-row"><span>当前模型</span><b>随机森林</b></div>
+  <div class="status-row"><span>当前模型</span><b id="current-model">加载中</b></div>
   <div class="status-row"><span>标签</span><b>is_canceled</b></div>
 {% endblock %}
 {% block content %}
 <section class="tabs" id="prediction-tabs" data-field="cancel_probability">
-  <button class="is-active" data-tab="single">订单预测</button>
-  <button data-tab="metrics">模型评估详情</button>
-  <button data-tab="batch">批量预测记录</button>
+  <button class="is-active" data-tab="single" type="button">订单预测</button>
+  <button data-tab="metrics" type="button">模型评估详情</button>
+  <button data-tab="batch" type="button">批量预测记录</button>
 </section>
 
 <section class="tab-page is-active" id="tab-single">
