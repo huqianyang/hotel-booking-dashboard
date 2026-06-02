@@ -6,9 +6,8 @@
 {% block title_actions %}<span class="run-badge" id="latest-event-time" data-field="latest_event_time">2017-01-14 14:00:00</span>{% endblock %}
 {% block sidebar_extra %}
   <div class="side-divider"></div>
-  <div class="status-row"><span>订单模拟</span><b id="simulation-status">运行中</b></div>
-  <div class="status-row"><span>当前日期</span><b>2017-01-14</b></div>
-  <button class="side-button" id="toggle-simulation" type="button">停止模拟</button>
+  <div class="status-row"><span>刷新频率</span><b>5 秒</b></div>
+  <div class="status-row"><span>实时链路</span><b>自动检测</b></div>
 {% endblock %}
 {% block content %}
 <section class="metric-grid" id="dashboard-summary" aria-label="首页核心指标"></section>
@@ -22,7 +21,11 @@
   <article class="panel chart-panel">
     <div class="panel-head">
       <h3>预订流入与取消风险趋势</h3>
-      <div class="segmented"><button class="is-active">日</button><button>周</button><button>月</button></div>
+      <div class="segmented" id="trend-granularity">
+        <button class="is-active" data-granularity="day" type="button">日</button>
+        <button data-granularity="week" type="button">周</button>
+        <button data-granularity="month" type="button">月</button>
+      </div>
     </div>
     <div class="echart-box" id="dashboard-trend"></div>
   </article>

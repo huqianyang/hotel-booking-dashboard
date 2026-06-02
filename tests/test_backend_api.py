@@ -591,7 +591,7 @@ def test_model_metric_chart_options_are_generated_from_training_metrics(tmp_path
     assert response.status_code == 200
     assert payload["data"]["chart_type"] == "bar"
     assert payload["data"]["status"] == "running"
-    assert options["xAxis"][0]["data"] == ["accuracy", "precision_score", "recall_score", "f1_score"]
+    assert options["xAxis"][0]["data"] == ["准确率", "精确率", "召回率", "F1 值"]
     assert options["series"][0]["data"] == [0.87, 0.82, 0.83, 0.825]
 
 
@@ -618,7 +618,7 @@ def test_visualization_chart_options_cover_all_analysis_charts(tmp_path):
         "/api/charts/visualization-factor-bars": "bar",
         "/api/charts/visualization-channel-ranking": "bar",
         "/api/charts/visualization-risk-tags": "wordcloud",
-        "/api/charts/visualization-country-risk": "bar",
+        "/api/charts/visualization-country-risk": "map",
     }
 
     for endpoint, chart_type in endpoints.items():
@@ -631,6 +631,23 @@ def test_visualization_chart_options_cover_all_analysis_charts(tmp_path):
         assert payload["data"]["status"] == "running"
         assert payload["data"]["source"] == "mysql"
         assert options != {}
+
+
+def test_chart_options_use_chinese_labels_and_world_map(tmp_path):
+    client = _client(tmp_path)
+
+    trend_options = _chart_options(client.get("/api/charts/dashboard-trend?granularity=day").get_json())
+    country_options = _chart_options(client.get("/api/charts/visualization-country-risk").get_json())
+    metrics_options = _chart_options(client.get("/api/charts/model-metrics").get_json())
+    matrix_options = _chart_options(client.get("/api/charts/confusion-matrix").get_json())
+
+    assert [series["name"] for series in trend_options["series"]] == ["预订流入", "预测取消", "取消率"]
+    assert country_options["series"][0]["type"] == "map"
+    assert country_options["series"][0]["map"] == "world"
+    assert country_options["series"][0]["name"] == "取消率"
+    assert metrics_options["xAxis"][0]["data"] == ["准确率", "精确率", "召回率", "F1 值"]
+    assert matrix_options["xAxis"][0]["data"] == ["预测未取消", "预测取消"]
+    assert matrix_options["yAxis"][0]["data"] == ["实际未取消", "实际取消"]
 
 
 def test_chart_endpoints_accept_visualization_filters(tmp_path):

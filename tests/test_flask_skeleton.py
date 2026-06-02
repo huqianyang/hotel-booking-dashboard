@@ -117,6 +117,27 @@ def test_visualization_page_no_longer_uses_static_mock_map_container():
     assert "mock-map" not in html
 
 
+def test_frontend_uses_realtime_summary_and_chinese_detail_labels():
+    dashboard_script = (BASE_DIR / "app/static/js/dashboard.js").read_text(encoding="utf-8")
+    visualization_script = (BASE_DIR / "app/static/js/visualization.js").read_text(encoding="utf-8")
+    bookings_script = (BASE_DIR / "app/static/js/bookings.js").read_text(encoding="utf-8")
+    base_template = (BASE_DIR / "app/templates/base.html").read_text(encoding="utf-8")
+
+    assert "world.js" in base_template
+    assert "summary.total_bookings" in dashboard_script
+    assert "canceled_bookings" not in dashboard_script
+    assert "avg_adr" not in dashboard_script
+    assert "/api/dashboard/summary" in visualization_script
+    assert "/api/realtime/summary" in visualization_script
+    assert "/api/dashboard/summary" in bookings_script
+    assert "总匹配记录" in bookings_script
+    assert "订单编号" in bookings_script
+    assert "<span>${field}</span>" not in bookings_script
+    assert "查询 hotel_bookings" not in bookings_script
+    assert "演示编辑字段" not in bookings_script
+    assert "删除策略" not in bookings_script
+
+
 def test_health_endpoint_reports_application_status():
     app = create_app({"TESTING": True})
     client = app.test_client()

@@ -10,8 +10,18 @@ let overview = {
   sample_orders: [],
 };
 let filters = {};
+let dashboardSummary = { total_bookings: 0, status: "waiting", message: "等待实时链路数据" };
+let realtimeSummary = {
+  cancel_rate: 0,
+  cancel_count: 0,
+  avg_adr: 0,
+  average_cancel_probability: 0,
+  high_risk_count: 0,
+  status: "waiting",
+  message: "等待实时链路数据",
+};
 
-const percent = (value) => `${(value * 100).toFixed(1)}%`;
+const percent = (value) => `${(Number(value || 0) * 100).toFixed(1)}%`;
 
 async function apiGet(url) {
   const response = await fetch(url);
@@ -51,12 +61,14 @@ function renderChips() {
 }
 
 function renderSummary() {
-  const s = overview.summary;
+  const cancelRate = realtimeSummary.cancel_rate ?? realtimeSummary.average_cancel_probability ?? 0;
+  const cancelCount = realtimeSummary.cancel_count ?? realtimeSummary.canceled_bookings ?? realtimeSummary.high_risk_count ?? 0;
+  const avgAdr = realtimeSummary.avg_adr ?? realtimeSummary.average_adr ?? realtimeSummary.adr ?? 0;
   document.querySelector("#viz-summary").innerHTML = [
-    ["当前订单数", s.booking_count.toLocaleString(), "booking_count"],
-    ["当前取消率", percent(s.cancel_rate), "cancel_rate"],
-    ["已取消订单", s.cancel_count.toLocaleString(), "cancel_count"],
-    ["平均 ADR", Number(s.avg_adr || 0).toFixed(2), "avg_adr"],
+    ["当前订单数", Number(dashboardSummary.total_bookings || 0).toLocaleString(), "dashboard.summary.total_bookings"],
+    ["当前取消率", percent(cancelRate), "realtime.summary.cancel_rate"],
+    ["已取消订单", Number(cancelCount || 0).toLocaleString(), "realtime.summary.cancel_count"],
+    ["平均 ADR", Number(avgAdr || 0).toFixed(2), "realtime.summary.avg_adr"],
   ].map(([n, v, note]) => `<article class="metric-card"><small>${n}</small><strong>${v}</strong><em>${note}</em></article>`).join("");
 }
 
@@ -92,7 +104,14 @@ async function renderAll() {
 
 async function loadOverview() {
   const suffix = queryString();
-  overview = await apiGet(`/api/visualization/overview${suffix ? `?${suffix}` : ""}`);
+  const [overviewData, dashboardData, realtimeData] = await Promise.all([
+    apiGet(`/api/visualization/overview${suffix ? `?${suffix}` : ""}`),
+    apiGet("/api/dashboard/summary"),
+    apiGet("/api/realtime/summary"),
+  ]);
+  overview = overviewData;
+  dashboardSummary = dashboardData;
+  realtimeSummary = realtimeData;
   await renderAll();
 }
 

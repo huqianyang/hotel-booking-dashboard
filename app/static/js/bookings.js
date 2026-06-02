@@ -1,5 +1,5 @@
-let state = { page: 1, pageSize: 20, filters: {}, totalPages: 1, rows: [] };
-const pct = (value) => `${(value * 100).toFixed(1)}%`;
+let state = { page: 1, pageSize: 20, filters: {}, totalPages: 1, rows: [], realtimeTotal: null };
+const pct = (value) => `${(Number(value || 0) * 100).toFixed(1)}%`;
 
 async function apiGet(url) {
   const response = await fetch(url);
@@ -32,6 +32,11 @@ async function loadFilterOptions() {
   fillSelect('select[name="is_canceled"]', options.cancel_statuses || []);
 }
 
+async function loadRealtimeTotal() {
+  const summary = await apiGet("/api/dashboard/summary");
+  state.realtimeTotal = Number(summary.total_bookings || 0);
+}
+
 function applyQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const form = document.querySelector("#booking-filters");
@@ -57,15 +62,19 @@ function queryString() {
   return params.toString();
 }
 
+function displayTotal(result) {
+  return Object.keys(state.filters).length ? result.pagination.total : (state.realtimeTotal ?? result.pagination.total);
+}
+
 function renderStats(result) {
   const rows = result.items || [];
   const canceled = rows.filter((row) => Number(row.is_canceled) === 1).length;
   const avgAdr = rows.reduce((sum, row) => sum + Number(row.adr || 0), 0) / Math.max(rows.length, 1);
   document.querySelector("#booking-stats").innerHTML = [
     ["当前页结果数", rows.length, "当前分页内"],
-    ["当前页取消率", pct(canceled / Math.max(rows.length, 1)), "基于 is_canceled"],
+    ["当前页取消率", pct(canceled / Math.max(rows.length, 1)), "基于当前页 is_canceled"],
     ["当前页平均 ADR", avgAdr.toFixed(1), "平均每日房价"],
-    ["总匹配记录", result.pagination.total, "后端 API 返回"],
+    ["总匹配记录", displayTotal(result).toLocaleString(), Object.keys(state.filters).length ? "筛选结果" : "80008 + 实时处理量"],
   ].map(([name, value, note]) => `<article class="metric-card"><small>${name}</small><strong>${value}</strong><em>${note}</em></article>`).join("");
 }
 
@@ -74,7 +83,7 @@ function renderTable(result) {
   state.rows = rows;
   state.totalPages = result.pagination.total_pages || 1;
   renderStats(result);
-  document.querySelector("#booking-count").textContent = `${result.pagination.total} 条记录`;
+  document.querySelector("#booking-count").textContent = `${displayTotal(result).toLocaleString()} 条记录`;
   document.querySelector("#booking-table").innerHTML = rows.length ? rows.map((row) => `
     <tr>
       <td>${row.booking_id}</td><td>${row.hotel_name}</td><td>${row.country_name}</td><td>${row.market_segment_name}</td>
@@ -91,6 +100,7 @@ function renderTable(result) {
 
 async function loadTable() {
   collectFilters();
+  await loadRealtimeTotal();
   const result = await apiGet(`/api/bookings?${queryString()}`);
   renderTable(result);
 }
@@ -98,18 +108,26 @@ async function loadTable() {
 async function selectBooking(bookingId) {
   if (!bookingId) {
     document.querySelector("#booking-detail").innerHTML = "<p>暂无记录</p>";
+    document.querySelector("#operation-log").innerHTML = "";
     return;
   }
   const row = await apiGet(`/api/bookings/${bookingId}`);
-  const fields = ["booking_id", "hotel_name", "arrival_date", "country_name", "market_segment_name", "customer_type_name", "meal_name", "deposit_type_name", "previous_cancellations", "total_of_special_requests"];
-  document.querySelector("#booking-detail").innerHTML = fields.map((field) => `
-    <div class="detail-item"><span>${field}</span><strong>${row[field] ?? "-"}</strong></div>
+  const fields = [
+    ["订单编号", "booking_id"],
+    ["酒店类型", "hotel_name"],
+    ["到店日期", "arrival_date"],
+    ["国家/地区", "country_name"],
+    ["市场渠道", "market_segment_name"],
+    ["客户类型", "customer_type_name"],
+    ["餐食类型", "meal_name"],
+    ["押金类型", "deposit_type_name"],
+    ["历史取消次数", "previous_cancellations"],
+    ["特殊需求数", "total_of_special_requests"],
+  ];
+  document.querySelector("#booking-detail").innerHTML = fields.map(([label, key]) => `
+    <div class="detail-item"><span>${label}</span><strong>${row[key] ?? "-"}</strong></div>
   `).join("");
-  document.querySelector("#operation-log").innerHTML = `
-    <div class="log-line">查询 hotel_bookings：booking_id=${row.booking_id}</div>
-    <div class="log-line">演示编辑字段：customer_type、market_segment、deposit_type、adr、total_of_special_requests</div>
-    <div class="log-line">删除策略：只更新 is_deleted = 1，不物理删除</div>
-  `;
+  document.querySelector("#operation-log").innerHTML = "";
 }
 
 document.querySelector("#booking-filters").addEventListener("submit", (event) => {
